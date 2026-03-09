@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}NaijaNest – Find Your Dream Home in Lagos{% endblock %}
+
+{% block content %}
+
+  <!-- 1. Hero Section -->
+  <section class="relative min-h-[90vh] flex items-center justify-center bg-cover bg-center bg-no-repeat overflow-hidden"
+           style="background-image: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920')">
+    <div class="absolute inset-0 bg-black/70"></div>
+
+    <div class="relative z-10 max-w-6xl mx-auto px-6 text-center text-white">
+      <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight drop-shadow-2xl mb-6">
+        Find Your Dream Home in Lagos
+      </h1>
+
+      <p class="text-xl md:text-2xl mb-10 max-w-4xl mx-auto drop-shadow-lg">
+        Verified listings, real photos, and honest details. No wasted trips.
+      </p>
+
+      <div class="flex flex-col sm:flex-row justify-center gap-6">
+        <a href="{% url 'property_list' %}" class="px-10 py-5 bg-indigo-600 text-white font-bold text-lg rounded-xl hover:bg-indigo-700 transition transform hover:scale-105 shadow-xl">
+          Browse Homes
+        </a>
+        <a href="#" class="px-10 py-5 bg-white/10 backdrop-blur-md border border-white/30 text-white font-bold text-lg rounded-xl hover:bg-white/20 transition">
+          List Your Property Free
+        </a>
+      </div>
+
+      <p class="mt-10 text-lg opacity-90">
+        Already helped <span class="font-bold text-indigo-400">2,400+</span> Lagosians find their perfect home
+      </p>
+    </div>
+  </section>
+
+  <!-- 2. Featured Properties -->
+  <section class="py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-6">
+      <h2 class="text-4xl font-bold text-center mb-16">Featured Properties</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+        <!-- Property 1 -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all">
+          <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800" alt="Lekki Luxury Apartment" class="w-full h-64 object-cover">
+          <div class="p-6">
+            <h3 class="text-2xl font-semibold mb-2">Lekki Luxury Apartment</h3>
+            <p class="text-gray-600 mb-4">Lekki, Lagos • 3 Bed • 2 Bath</p>
+            <div class="flex justify-between items-center">
+              <span class="text-2xl font-bold text-indigo-700">₦2,500,000/mo</span>
+              <a href="#" class="text-indigo-600 hover:underline">View Details</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Property 2 -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all">
+          <img src="https://images.unsplash.com/photo-1600563438938-a9a0b7c2f2a3?w=800" alt="Ikoyi Modern Villa" class="w-full h-64 object-cover">
+          <div class="p-6">
+            <h3 class="text-2xl font-semibold mb-2">Ikoyi Modern Villa</h3>
+            <p class="text-gray-600 mb-4">Ikoyi, Lagos • 4 Bed • 4 Bath</p>
+            <div class="flex justify-between items-center">
+              <span class="text-2xl font-bold text-indigo-700">₦4,000,000/mo</span>
+              <a href="#" class="text-indigo-600 hover:underline">View Details</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Property 3 -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all">
+          <img src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800" alt="Surulere Family Home" class="w-full h-64 object-cover">
+          <div class="p-6">
+            <h3 class="text-2xl font-semibold mb-2">Surulere Family Home</h3>
+            <p class="text-gray-600 mb-4">Surulere, Lagos • 3 Bed • 2 Bath</p>
+            <div class="flex justify-between items-center">
+              <span class="text-2xl font-bold text-indigo-700">₦1,800,000/mo</span>
+              <a href="#" class="text-indigo-600 hover:underline">View Details</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Why Choose Us -->
+  <section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-6">
+      <h2 class="text-4xl md:text-5xl font-bold text-center mb-16">Why Choose NaijaNest?</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+        <div class="p-8 rounded-2xl glass">
+          <div class="text-6xl mb-6">🛡️</div>
+          <h3 class="text-2xl font-bold mb-4">100% Verified Listings</h3>
+          <p class="text-gray-700 text-lg">
+            No fake agents, no photoshopped pictures. Every home is physically checked and landlord-verified.
+          </p>
+        </div>
+
+        <div class="p-8 rounded-2xl glass">
+          <div class="text-6xl mb-6">📍</div>
+          <h3 class="text-2xl font-bold mb-4">Save Transport Money</h3>
+          <p class="text-gray-700 text-lg">
+            See real videos, ask real questions, and only visit properties you actually like.
+          </p>
+        </div>
+
+        <div class="p-8 rounded-2xl glass">
+          <div class="text-6xl mb-6">🤝</div>
+          <h3 class="text-2xl font-bold mb-4">Direct Landlord Chat</h3>
+          <p class="text-gray-700 text-lg">
+            No middle-man wahala. Talk directly, negotiate freely, close faster.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQs -->
+  <section class="py-20 bg-gray-50">
+    <div class="max-w-4xl mx-auto px-6">
+      <h2 class="text-4xl font-bold text-center mb-16">Frequently Asked Questions</h2>
+
+      <div class="space-y-6">
+        <details class="group rounded-xl bg-white p-6 shadow-md">
+          <summary class="flex justify-between items-center cursor-pointer text-xl font-semibold">
+            <span>How do I know the listings are real?</span>
+            <span class="transition group-open:rotate-180">▼</span>
+          </summary>
+          <div class="mt-4 text-gray-600">
+            Every property is manually verified. We require real photos, video tours, and landlord ID confirmation.
+          </div>
+        </details>
+
+        <details class="group rounded-xl bg-white p-6 shadow-md">
+          <summary class="flex justify-between items-center cursor-pointer text-xl font-semibold">
+            <span>Do I have to pay agent fees?</span>
+            <span class="transition group-open:rotate-180">▼</span>
+          </summary>
+          <div class="mt-4 text-gray-600">
+            No. We connect you directly with landlords or verified agents — no extra fees.
+          </div>
+        </details>
+
+        <details class="group rounded-xl bg-white p-6 shadow-md">
+          <summary class="flex justify-between items-center cursor-pointer text-xl font-semibold">
+            <span>Can I ask questions before viewing?</span>
+            <span class="transition group-open:rotate-180">▼</span>
+          </summary>
+          <div class="mt-4 text-gray-600">
+            Yes — message landlords directly about water, power, security, and more.
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+{% endblock %}
