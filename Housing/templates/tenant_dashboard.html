@@ -1,0 +1,413 @@
+{% extends 'base.html' %}
+{% block title %}My Dashboard – NaijaNest{% endblock %}
+
+{% block extra_head %}
+<style>
+  :root {
+    --green: #16a34a; --green-light: #dcfce7; --green-mid: #bbf7d0;
+    --gold: #f59e0b;  --gold-light: #fef3c7;
+    --ink: #0d1f12;   --mist: #f0f7f2;
+    --sidebar-w: 240px;
+  }
+  .dash-root { display:flex; min-height:100vh; background:#f4f7f5; padding-top:72px; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width:var(--sidebar-w); background:var(--ink);
+    display:flex; flex-direction:column;
+    position:fixed; top:72px; bottom:0; left:0; z-index:40;
+    overflow-y:auto; transition:transform 0.3s ease;
+  }
+  .sidebar-top { padding:1.75rem 1.25rem 1rem; border-bottom:1px solid rgba(255,255,255,0.07); }
+  .dash-avatar {
+    width:52px; height:52px; border-radius:14px;
+    background:linear-gradient(135deg,var(--green),#34d399);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:800;
+    color:#fff; margin-bottom:0.85rem;
+  }
+  .dash-name { font-family:'Syne',sans-serif; font-weight:700; font-size:0.95rem; color:#fff; }
+  .dash-role { font-size:0.68rem; color:rgba(255,255,255,0.4); margin-top:3px; text-transform:uppercase; letter-spacing:0.07em; }
+  .role-chip {
+    display:inline-flex; align-items:center; gap:5px;
+    background:rgba(22,163,74,0.2); border:1px solid rgba(22,163,74,0.35);
+    color:#4ade80; font-size:0.65rem; font-weight:700;
+    padding:3px 9px; border-radius:100px; margin-top:6px; letter-spacing:0.05em;
+  }
+
+  .sidebar-nav { padding:1rem 0.75rem; flex:1; }
+  .nav-group-label {
+    font-size:0.65rem; font-weight:700; letter-spacing:0.1em;
+    text-transform:uppercase; color:rgba(255,255,255,0.25);
+    padding:0.75rem 0.5rem 0.4rem;
+  }
+  .nav-item {
+    display:flex; align-items:center; gap:10px;
+    padding:9px 12px; border-radius:10px;
+    font-size:0.855rem; font-weight:500; color:rgba(255,255,255,0.6);
+    text-decoration:none; transition:background 0.15s,color 0.15s;
+    margin-bottom:2px;
+  }
+  .nav-item:hover { background:rgba(255,255,255,0.07); color:#fff; }
+  .nav-item.active { background:var(--green); color:#fff; font-weight:600; }
+  .nav-icon {
+    width:32px; height:32px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(255,255,255,0.06); flex-shrink:0; transition:background 0.15s;
+  }
+  .nav-item.active .nav-icon { background:rgba(255,255,255,0.2); }
+  .nav-item:hover .nav-icon  { background:rgba(255,255,255,0.1); }
+  .nav-badge {
+    margin-left:auto; background:var(--gold); color:#0d1f12;
+    font-size:0.65rem; font-weight:700; padding:2px 7px; border-radius:100px;
+  }
+  .sidebar-bottom { padding:1rem 0.75rem; border-top:1px solid rgba(255,255,255,0.07); }
+
+  /* ── Main ── */
+  .dash-main { margin-left:var(--sidebar-w); flex:1; padding:2rem 2.5rem 4rem; min-width:0; }
+  .dash-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; }
+  .dash-greeting { font-family:'Syne',sans-serif; font-size:clamp(1.5rem,3vw,2rem); font-weight:800; color:var(--ink); letter-spacing:-0.03em; }
+  .dash-greeting .wave { display:inline-block; animation:wave 1.8s ease-in-out; }
+  @keyframes wave { 0%,100%{transform:rotate(0)} 20%{transform:rotate(20deg)} 40%{transform:rotate(-10deg)} 60%{transform:rotate(14deg)} 80%{transform:rotate(-4deg)} }
+  .dash-subtext { font-size:0.875rem; color:#6b7280; margin-top:4px; }
+  .dash-cta-btn {
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--green); color:#fff; font-weight:700;
+    font-size:0.875rem; padding:11px 22px; border-radius:12px;
+    text-decoration:none; transition:background 0.2s,transform 0.15s;
+  }
+  .dash-cta-btn:hover { background:#15803d; transform:translateY(-1px); }
+
+  /* ── Stats ── */
+  .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(175px,1fr)); gap:1.25rem; margin-bottom:2rem; }
+  .stat-card {
+    background:#fff; border-radius:18px; padding:1.5rem;
+    border:1px solid #e9f0eb; position:relative; overflow:hidden;
+    transition:transform 0.2s,box-shadow 0.2s;
+  }
+  .stat-card:hover { transform:translateY(-3px); box-shadow:0 12px 32px rgba(0,0,0,0.07); }
+  .stat-card::after { content:''; position:absolute; top:0;left:0;right:0; height:3px; }
+  .stat-card.green::after  { background:linear-gradient(90deg,var(--green),#34d399); }
+  .stat-card.gold::after   { background:linear-gradient(90deg,var(--gold),#fbbf24); }
+  .stat-card.blue::after   { background:linear-gradient(90deg,#3b82f6,#60a5fa); }
+  .stat-card.rose::after   { background:linear-gradient(90deg,#f43f5e,#fb7185); }
+  .stat-icon { width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin-bottom:1rem; }
+  .stat-icon.green  { background:var(--green-light); }
+  .stat-icon.gold   { background:var(--gold-light); }
+  .stat-icon.blue   { background:#eff6ff; }
+  .stat-icon.rose   { background:#fff1f2; }
+  .stat-num { font-family:'Syne',sans-serif; font-size:2rem; font-weight:800; color:var(--ink); line-height:1; margin-bottom:4px; }
+  .stat-label { font-size:0.78rem; color:#6b7280; }
+  .stat-delta { position:absolute; top:1.25rem;right:1.25rem; font-size:0.7rem; font-weight:600; padding:3px 8px; border-radius:100px; }
+  .stat-delta.up   { background:#dcfce7; color:#166534; }
+  .stat-delta.flat { background:#f3f4f6; color:#6b7280; }
+
+  /* ── Grid ── */
+  .content-grid { display:grid; grid-template-columns:1fr 340px; gap:1.5rem; }
+  @media(max-width:1100px){.content-grid{grid-template-columns:1fr;}}
+
+  /* ── Cards ── */
+  .section-card { background:#fff; border-radius:18px; border:1px solid #e9f0eb; overflow:hidden; margin-bottom:1.5rem; }
+  .section-card-head { padding:1.25rem 1.5rem; border-bottom:1px solid #f3f4f6; display:flex; justify-content:space-between; align-items:center; }
+  .section-card-title { font-family:'Syne',sans-serif; font-size:0.95rem; font-weight:700; color:var(--ink); }
+  .section-card-link { font-size:0.78rem; color:var(--green); font-weight:600; text-decoration:none; }
+  .section-card-link:hover { text-decoration:underline; }
+
+  /* ── Recommended property cards ── */
+  .rec-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:1rem; padding:1.25rem; }
+  .rec-card { border-radius:14px; overflow:hidden; border:1px solid #e9f0eb; transition:transform 0.2s,box-shadow 0.2s; }
+  .rec-card:hover { transform:translateY(-4px); box-shadow:0 12px 32px rgba(0,0,0,0.08); }
+  .rec-card-img { width:100%; height:140px; object-fit:cover; display:block; }
+  .rec-card-body { padding:0.875rem; }
+  .rec-card-loc { font-size:0.7rem; color:#9ca3af; display:flex; align-items:center; gap:3px; margin-bottom:3px; }
+  .rec-card-name { font-weight:700; font-size:0.82rem; color:var(--ink); margin-bottom:6px; }
+  .rec-card-footer { display:flex; justify-content:space-between; align-items:center; }
+  .rec-card-price { font-family:'Syne',sans-serif; font-weight:800; font-size:0.9rem; color:var(--green); }
+  .rec-card-price span { font-family:'DM Sans',sans-serif; font-size:0.65rem; color:#9ca3af; font-weight:400; }
+  .rec-card-btn { font-size:0.7rem; font-weight:600; color:var(--green); padding:5px 10px; border-radius:7px; border:1.5px solid var(--green-mid); text-decoration:none; transition:all 0.15s; }
+  .rec-card-btn:hover { background:var(--green); color:#fff; border-color:var(--green); }
+
+  /* ── Recent searches ── */
+  .search-row { display:flex; align-items:center; gap:0.875rem; padding:0.875rem 1.5rem; border-bottom:1px solid #f9fafb; transition:background 0.15s; cursor:pointer; }
+  .search-row:last-child { border-bottom:none; }
+  .search-row:hover { background:#fafafa; }
+  .search-icon-wrap { width:36px;height:36px;border-radius:10px;background:var(--mist);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.9rem; }
+  .search-text { flex:1; }
+  .search-query { font-size:0.82rem; font-weight:600; color:var(--ink); }
+  .search-meta  { font-size:0.72rem; color:#9ca3af; margin-top:1px; }
+  .search-redo  { font-size:0.72rem; color:var(--green); font-weight:600; white-space:nowrap; }
+
+  /* ── Saved homes ── */
+  .saved-card { display:flex; gap:0.875rem; padding:1rem 1.5rem; border-bottom:1px solid #f9fafb; align-items:center; transition:background 0.15s; }
+  .saved-card:last-child { border-bottom:none; }
+  .saved-card:hover { background:#fafafa; }
+  .saved-img { width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0; }
+  .saved-info { flex:1; min-width:0; }
+  .saved-name { font-size:0.82rem; font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .saved-price { font-size:0.78rem; color:var(--green); font-weight:700; margin-top:2px; }
+  .saved-remove { background:none;border:none;color:#d1d5db;cursor:pointer;padding:4px;border-radius:6px;transition:color 0.15s,background 0.15s; }
+  .saved-remove:hover { color:#ef4444; background:#fef2f2; }
+
+  /* ── Profile banner ── */
+  .profile-banner { background:linear-gradient(135deg,#0d1f12,#14532d); border-radius:18px; padding:1.5rem; color:#fff; margin-bottom:1.5rem; position:relative; overflow:hidden; }
+  .profile-banner::before { content:''; position:absolute; right:-30px;top:-30px; width:120px;height:120px; border-radius:50%; background:rgba(255,255,255,0.04); }
+  .profile-banner-title { font-family:'Syne',sans-serif; font-weight:700; font-size:0.95rem; margin-bottom:0.5rem; }
+  .profile-banner p { font-size:0.78rem; color:rgba(255,255,255,0.65); margin-bottom:1rem; }
+  .progress-bar-bg { background:rgba(255,255,255,0.15); border-radius:100px; height:6px; margin-bottom:0.5rem; overflow:hidden; }
+  .progress-bar-fill { height:100%; border-radius:100px; background:linear-gradient(90deg,#4ade80,#34d399); width:0; transition:width 1s ease; }
+  .progress-label { font-size:0.72rem; color:rgba(255,255,255,0.5); }
+
+  /* ── Quick actions ── */
+  .quick-actions { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1.5rem; }
+  .quick-btn { display:flex;flex-direction:column;align-items:center;gap:8px;padding:1.1rem 0.75rem; background:#fff;border-radius:14px;border:1.5px solid #e9f0eb; font-size:0.78rem;font-weight:600;color:var(--ink);text-decoration:none; transition:border-color 0.2s,background 0.2s,transform 0.15s;text-align:center; }
+  .quick-btn:hover { border-color:var(--green-mid);background:var(--mist);transform:translateY(-2px); }
+  .quick-btn-icon { width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;background:var(--green-light); }
+
+  /* ── Sidebar toggle (mobile) ── */
+  .sidebar-toggle { display:none;position:fixed;bottom:1.5rem;right:1.5rem;z-index:50;width:50px;height:50px;background:var(--green);color:#fff;border:none;border-radius:50%;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 20px rgba(22,163,74,0.4); }
+  @media(max-width:768px){ .sidebar{transform:translateX(-100%);} .sidebar.open{transform:translateX(0);} .dash-main{margin-left:0;padding:1.25rem 1rem 5rem;} .sidebar-toggle{display:flex;} }
+
+  .fade-in { opacity:0; transform:translateY(12px); animation:fadeIn 0.5s ease forwards; }
+  .fade-in.d1{animation-delay:0.05s} .fade-in.d2{animation-delay:0.12s} .fade-in.d3{animation-delay:0.19s} .fade-in.d4{animation-delay:0.26s}
+  @keyframes fadeIn{ to{opacity:1;transform:translateY(0)} }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-root">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div class="dash-avatar">{{ user.username|first|upper }}</div>
+      <div class="dash-name">{{ user.username }}</div>
+      <div class="dash-role">Tenant Account</div>
+      <div class="role-chip">🔍 Looking to Rent</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-group-label">Menu</div>
+      <a href="{% url 'dashboard' %}" class="nav-item active">
+        <span class="nav-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+        Overview
+      </a>
+      <a href="{% url 'property_list' %}" class="nav-item">
+        <span class="nav-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span>
+        Browse Homes
+      </a>
+      <a href="#" class="nav-item">
+        <span class="nav-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+        Saved Homes
+        <span class="nav-badge">3</span>
+      </a>
+      <a href="#" class="nav-item">
+        <span class="nav-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
+        Messages
+        <span class="nav-badge">2</span>
+      </a>
+      <a href="#" class="nav-item">
+        <span class="nav-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg></span>
+        Alerts
+      </a>
+      <div class="nav-group-label" style="margin-top:0.75rem">Account</div>
+      <a href="#" class="nav-item">
+        <span class="nav-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></span>
+        Profile
+      </a>
+    </nav>
+    <div class="sidebar-bottom">
+      <a href="{% url 'logout' %}" class="nav-item" style="color:#f87171;">
+        <span class="nav-icon" style="background:rgba(239,68,68,0.12)"><svg width="16" height="16" fill="none" stroke="#f87171" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
+        Log Out
+      </a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="dash-main">
+
+    <div class="dash-header fade-in d1">
+      <div>
+        <div class="dash-greeting">Hey, {{ user.username }} <span class="wave">👋</span></div>
+        <div class="dash-subtext">Here are some homes we think you'll love.</div>
+      </div>
+      <a href="{% url 'property_list' %}" class="dash-cta-btn">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Browse All Homes
+      </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid fade-in d2">
+      <div class="stat-card green">
+        <span class="stat-delta up">↑ New</span>
+        <div class="stat-icon green">❤️</div>
+        <div class="stat-num">3</div>
+        <div class="stat-label">Saved Homes</div>
+      </div>
+      <div class="stat-card gold">
+        <span class="stat-delta flat">—</span>
+        <div class="stat-icon gold">🔍</div>
+        <div class="stat-num">5</div>
+        <div class="stat-label">Recent Searches</div>
+      </div>
+      <div class="stat-card blue">
+        <span class="stat-delta up">↑ 2 new</span>
+        <div class="stat-icon blue">💬</div>
+        <div class="stat-num">2</div>
+        <div class="stat-label">Messages</div>
+      </div>
+      <div class="stat-card rose">
+        <span class="stat-delta flat">—</span>
+        <div class="stat-icon rose">🔔</div>
+        <div class="stat-num">0</div>
+        <div class="stat-label">Active Alerts</div>
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <!-- LEFT -->
+      <div>
+        <!-- Recommended -->
+        <div class="section-card fade-in d3">
+          <div class="section-card-head">
+            <span class="section-card-title">Recommended For You</span>
+            <a href="{% url 'property_list' %}" class="section-card-link">See all →</a>
+          </div>
+          <div class="rec-grid">
+            <div class="rec-card">
+              <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&q=80" class="rec-card-img" alt="Lekki Apt">
+              <div class="rec-card-body">
+                <div class="rec-card-loc"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Lekki Phase 1</div>
+                <div class="rec-card-name">3-Bed Apartment</div>
+                <div class="rec-card-footer">
+                  <div class="rec-card-price">₦3.2M <span>/yr</span></div>
+                  <a href="#" class="rec-card-btn">View</a>
+                </div>
+              </div>
+            </div>
+            <div class="rec-card">
+              <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&q=80" class="rec-card-img" alt="VI Apt">
+              <div class="rec-card-body">
+                <div class="rec-card-loc"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Victoria Island</div>
+                <div class="rec-card-name">2-Bed Shortlet</div>
+                <div class="rec-card-footer">
+                  <div class="rec-card-price">₦85k <span>/night</span></div>
+                  <a href="#" class="rec-card-btn">View</a>
+                </div>
+              </div>
+            </div>
+            <div class="rec-card">
+              <img src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&q=80" class="rec-card-img" alt="Surulere">
+              <div class="rec-card-body">
+                <div class="rec-card-loc"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Surulere</div>
+                <div class="rec-card-name">4-Bed Duplex</div>
+                <div class="rec-card-footer">
+                  <div class="rec-card-price">₦5.5M <span>/yr</span></div>
+                  <a href="#" class="rec-card-btn">View</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent searches -->
+        <div class="section-card fade-in d4">
+          <div class="section-card-head">
+            <span class="section-card-title">Recent Searches</span>
+            <a href="#" class="section-card-link">Clear all</a>
+          </div>
+          <div class="search-row">
+            <div class="search-icon-wrap">🔍</div>
+            <div class="search-text">
+              <div class="search-query">2-bed apartment in Lekki • Max ₦1.5M</div>
+              <div class="search-meta">Today, 10:22 AM</div>
+            </div>
+            <span class="search-redo">Search again</span>
+          </div>
+          <div class="search-row">
+            <div class="search-icon-wrap">🔍</div>
+            <div class="search-text">
+              <div class="search-query">Self-con in Yaba • Any price</div>
+              <div class="search-meta">Yesterday, 3:40 PM</div>
+            </div>
+            <span class="search-redo">Search again</span>
+          </div>
+          <div class="search-row">
+            <div class="search-icon-wrap">🔍</div>
+            <div class="search-text">
+              <div class="search-query">3-bed duplex in Ikeja • Max ₦3M</div>
+              <div class="search-meta">2 days ago</div>
+            </div>
+            <span class="search-redo">Search again</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div>
+        <div class="profile-banner fade-in d2">
+          <div class="profile-banner-title">Complete Your Profile</div>
+          <p>Add your phone number so landlords can reach you faster.</p>
+          <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
+          <div class="progress-label">60% complete</div>
+        </div>
+
+        <div class="quick-actions fade-in d3">
+          <a href="{% url 'property_list' %}" class="quick-btn"><span class="quick-btn-icon">🔍</span>Browse</a>
+          <a href="#" class="quick-btn"><span class="quick-btn-icon">❤️</span>Saved</a>
+          <a href="#" class="quick-btn"><span class="quick-btn-icon">💬</span>Messages</a>
+          <a href="#" class="quick-btn"><span class="quick-btn-icon">🔔</span>Set Alert</a>
+        </div>
+
+        <div class="section-card fade-in d4">
+          <div class="section-card-head">
+            <span class="section-card-title">Saved Homes</span>
+            <a href="#" class="section-card-link">View all</a>
+          </div>
+          <div class="saved-card">
+            <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=200&q=80" class="saved-img" alt="">
+            <div class="saved-info"><div class="saved-name">3-Bed Apartment, Lekki</div><div class="saved-price">₦3.2M / yr</div></div>
+            <button class="saved-remove"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+          </div>
+          <div class="saved-card">
+            <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=200&q=80" class="saved-img" alt="">
+            <div class="saved-info"><div class="saved-name">2-Bed Shortlet, VI</div><div class="saved-price">₦85k / night</div></div>
+            <button class="saved-remove"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+          </div>
+          <div class="saved-card">
+            <img src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=200&q=80" class="saved-img" alt="">
+            <div class="saved-info"><div class="saved-name">4-Bed Duplex, Ikeja</div><div class="saved-price">₦5.5M / yr</div></div>
+            <button class="saved-remove"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const sidebar = document.getElementById('sidebar');
+  document.getElementById('sidebarToggle').addEventListener('click', () => sidebar.classList.toggle('open'));
+  document.addEventListener('click', e => {
+    if (window.innerWidth <= 768 && !sidebar.contains(e.target) && !document.getElementById('sidebarToggle').contains(e.target))
+      sidebar.classList.remove('open');
+  });
+  window.addEventListener('load', () => {
+    setTimeout(() => { const f = document.getElementById('progressFill'); if(f) f.style.width='60%'; }, 400);
+  });
+  document.querySelectorAll('.saved-remove').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const card = btn.closest('.saved-card');
+      card.style.transition = 'opacity 0.3s,transform 0.3s';
+      card.style.opacity = '0'; card.style.transform = 'translateX(12px)';
+      setTimeout(() => card.remove(), 300);
+    });
+  });
+</script>
+{% endblock %}

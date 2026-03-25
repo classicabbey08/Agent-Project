@@ -1,12 +1,17 @@
 from django.urls import path
-from .views import home, property_list,property_create,dashboard,agent_dashboard,login,signup
+from . import views
 
 urlpatterns = [
-    path('', home, name='home'),                       
-    path('properties/', property_list, name='property_list'),
-    path('add-property/', property_create, name='property_create'),
-    path('dashboard/', dashboard, name='dashboard'),
-    path('agent-dashboard/', agent_dashboard, name='agent_dashboard'),
-    path('login/', login, name='login'),
-    path('signup/', signup, name='signup'),
+    path('', views.home, name='home'),
+    path('signup/', views.signup_view, name='signup'),
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('dashboard/', views.dashboard, name='dashboard'),
+    path('properties/', views.property_list, name='property_list'),
+    path('properties/add/', views.property_create, name='property_create'),
+    path('properties/<int:pk>/', views.property_detail, name='property_detail'),
+    path('properties/<int:pk>/save/', views.save_property, name='save_property'),
+    path('agents/', views.agents, name='agents'),
+    path('about/', views.about, name='about'),
+    path('contact/', views.contact, name='contact'),
 ]

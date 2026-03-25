@@ -1,24 +1,889 @@
 {% extends 'base.html' %}
 
-{% block title %}My Dashboard - NaijaNest{% endblock %}
+{% block title %}My Dashboard – NaijaNest{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* ── Tokens ── */
+  :root {
+    --green:       #16a34a;
+    --green-light: #dcfce7;
+    --green-mid:   #bbf7d0;
+    --gold:        #f59e0b;
+    --gold-light:  #fef3c7;
+    --ink:         #0d1f12;
+    --mist:        #f0f7f2;
+    --sidebar-w:   240px;
+  }
+
+  /* ── Layout ── */
+  .dash-root {
+    display: flex;
+    min-height: 100vh;
+    background: #f4f7f5;
+    padding-top: 72px; /* navbar height */
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--ink);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 72px;
+    bottom: 0;
+    left: 0;
+    z-index: 40;
+    overflow-y: auto;
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar-top {
+    padding: 1.75rem 1.25rem 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+
+  /* Avatar */
+  .dash-avatar {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--green), #34d399);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 0.85rem;
+    flex-shrink: 0;
+  }
+
+  .dash-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #fff;
+    line-height: 1.2;
+  }
+  .dash-role {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.4);
+    margin-top: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+
+  /* Nav items */
+  .sidebar-nav { padding: 1rem 0.75rem; flex: 1; }
+  .nav-group-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+    padding: 0.75rem 0.5rem 0.4rem;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    font-size: 0.855rem;
+    font-weight: 500;
+    color: rgba(255,255,255,0.6);
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+    margin-bottom: 2px;
+    cursor: pointer;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.07); color: #fff; }
+  .nav-item.active {
+    background: var(--green);
+    color: #fff;
+    font-weight: 600;
+  }
+  .nav-item .nav-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.06);
+    transition: background 0.15s;
+  }
+  .nav-item.active .nav-icon { background: rgba(255,255,255,0.2); }
+  .nav-item:hover .nav-icon  { background: rgba(255,255,255,0.1); }
+
+  .nav-badge {
+    margin-left: auto;
+    background: var(--gold);
+    color: #0d1f12;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 100px;
+  }
+
+  /* Sidebar bottom */
+  .sidebar-bottom {
+    padding: 1rem 0.75rem;
+    border-top: 1px solid rgba(255,255,255,0.07);
+  }
+
+  /* ── Main content ── */
+  .dash-main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    padding: 2rem 2.5rem 4rem;
+    min-width: 0;
+  }
+
+  /* ── Page header ── */
+  .dash-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .dash-greeting {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 800;
+    color: var(--ink);
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+  }
+  .dash-greeting .wave { display: inline-block; animation: wave 1.8s ease-in-out; }
+  @keyframes wave {
+    0%,100% { transform: rotate(0); }
+    20%      { transform: rotate(20deg); }
+    40%      { transform: rotate(-10deg); }
+    60%      { transform: rotate(14deg); }
+    80%      { transform: rotate(-4deg); }
+  }
+  .dash-subtext { font-size: 0.875rem; color: #6b7280; margin-top: 4px; }
+
+  .dash-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--green);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.875rem;
+    padding: 11px 22px;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+    white-space: nowrap;
+  }
+  .dash-cta-btn:hover { background: #15803d; transform: translateY(-1px); }
+
+  /* ── Stat cards ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 1.5rem;
+    border: 1px solid #e9f0eb;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.07); }
+
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .stat-card.green::after  { background: linear-gradient(90deg, var(--green), #34d399); }
+  .stat-card.gold::after   { background: linear-gradient(90deg, var(--gold), #fbbf24); }
+  .stat-card.blue::after   { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+  .stat-card.purple::after { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+
+  .stat-icon {
+    width: 42px; height: 42px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+  .stat-icon.green  { background: var(--green-light); }
+  .stat-icon.gold   { background: var(--gold-light); }
+  .stat-icon.blue   { background: #eff6ff; }
+  .stat-icon.purple { background: #f5f3ff; }
+
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--ink);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-label { font-size: 0.78rem; color: #6b7280; }
+  .stat-delta {
+    position: absolute;
+    top: 1.25rem; right: 1.25rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 100px;
+  }
+  .stat-delta.up   { background: #dcfce7; color: #166534; }
+  .stat-delta.flat { background: #f3f4f6; color: #6b7280; }
+
+  /* ── Content grid ── */
+  .content-grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 1.5rem;
+  }
+  @media (max-width: 1100px) {
+    .content-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── Section card ── */
+  .section-card {
+    background: #fff;
+    border-radius: 18px;
+    border: 1px solid #e9f0eb;
+    overflow: hidden;
+  }
+  .section-card-head {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .section-card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .section-card-link {
+    font-size: 0.78rem;
+    color: var(--green);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .section-card-link:hover { text-decoration: underline; }
+
+  /* ── Property rows ── */
+  .prop-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f9fafb;
+    transition: background 0.15s;
+  }
+  .prop-row:last-child { border-bottom: none; }
+  .prop-row:hover { background: #fafafa; }
+
+  .prop-row-img {
+    width: 60px; height: 60px;
+    border-radius: 12px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .prop-row-info { flex: 1; min-width: 0; }
+  .prop-row-name {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .prop-row-loc {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .prop-status {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 100px;
+    white-space: nowrap;
+  }
+  .prop-status.active   { background: #dcfce7; color: #166534; }
+  .prop-status.pending  { background: #fef3c7; color: #92400e; }
+  .prop-status.inactive { background: #f3f4f6; color: #6b7280; }
+
+  /* ── Activity feed ── */
+  .activity-item {
+    display: flex;
+    gap: 0.875rem;
+    padding: 0.875rem 1.5rem;
+    border-bottom: 1px solid #f9fafb;
+  }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-dot {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .activity-dot.view    { background: #eff6ff; }
+  .activity-dot.save    { background: #fdf4ff; }
+  .activity-dot.message { background: var(--green-light); }
+  .activity-dot.listing { background: var(--gold-light); }
+
+  .activity-text {
+    font-size: 0.82rem;
+    color: #374151;
+    line-height: 1.5;
+  }
+  .activity-text strong { color: var(--ink); font-weight: 600; }
+  .activity-time { font-size: 0.72rem; color: #9ca3af; margin-top: 2px; }
+
+  /* ── Saved properties ── */
+  .saved-card {
+    display: flex;
+    gap: 0.875rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f9fafb;
+    align-items: center;
+    transition: background 0.15s;
+  }
+  .saved-card:last-child { border-bottom: none; }
+  .saved-card:hover { background: #fafafa; }
+  .saved-img {
+    width: 56px; height: 56px;
+    border-radius: 10px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .saved-info { flex: 1; min-width: 0; }
+  .saved-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .saved-price {
+    font-size: 0.78rem;
+    color: var(--green);
+    font-weight: 700;
+    margin-top: 2px;
+  }
+  .saved-remove {
+    background: none;
+    border: none;
+    color: #d1d5db;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: color 0.15s, background 0.15s;
+  }
+  .saved-remove:hover { color: #ef4444; background: #fef2f2; }
+
+  /* ── Profile completion banner ── */
+  .profile-banner {
+    background: linear-gradient(135deg, #0d1f12 0%, #14532d 100%);
+    border-radius: 18px;
+    padding: 1.5rem;
+    color: #fff;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .profile-banner::before {
+    content: '';
+    position: absolute;
+    right: -30px; top: -30px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+  .profile-banner-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+  }
+  .profile-banner p { font-size: 0.78rem; color: rgba(255,255,255,0.65); margin-bottom: 1rem; }
+  .progress-bar-bg {
+    background: rgba(255,255,255,0.15);
+    border-radius: 100px;
+    height: 6px;
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    background: linear-gradient(90deg, #4ade80, #34d399);
+    width: 60%;
+    transition: width 1s ease;
+  }
+  .progress-label { font-size: 0.72rem; color: rgba(255,255,255,0.5); }
+
+  /* ── Quick actions ── */
+  .quick-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .quick-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 1.1rem 0.75rem;
+    background: #fff;
+    border-radius: 14px;
+    border: 1.5px solid #e9f0eb;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--ink);
+    text-decoration: none;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    text-align: center;
+    cursor: pointer;
+  }
+  .quick-btn:hover {
+    border-color: var(--green-mid);
+    background: var(--mist);
+    transform: translateY(-2px);
+  }
+  .quick-btn-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    background: var(--green-light);
+  }
+
+  /* ── Empty state ── */
+  .empty-state {
+    padding: 3rem 2rem;
+    text-align: center;
+    color: #9ca3af;
+  }
+  .empty-state-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+  .empty-state p { font-size: 0.875rem; }
+  .empty-state a {
+    display: inline-block;
+    margin-top: 1rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--green);
+    text-decoration: none;
+    padding: 8px 18px;
+    border: 1.5px solid var(--green-mid);
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+  .empty-state a:hover { background: var(--green-light); }
+
+  /* ── Mobile sidebar toggle ── */
+  .sidebar-toggle {
+    display: none;
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 50;
+    width: 50px; height: 50px;
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(22,163,74,0.4);
+  }
+
+  @media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .dash-main { margin-left: 0; padding: 1.25rem 1rem 5rem; }
+    .sidebar-toggle { display: flex; }
+  }
+
+  /* ── Fade-in animation ── */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(12px);
+    animation: fadeIn 0.5s ease forwards;
+  }
+  .fade-in.d1 { animation-delay: 0.05s; }
+  .fade-in.d2 { animation-delay: 0.12s; }
+  .fade-in.d3 { animation-delay: 0.19s; }
+  .fade-in.d4 { animation-delay: 0.26s; }
+  .fade-in.d5 { animation-delay: 0.33s; }
+  @keyframes fadeIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+{% endblock %}
 
 {% block content %}
-  <div class="max-w-7xl mx-auto px-6 py-12">
-    <h1 class="text-4xl font-bold mb-8">Welcome back, {{ user.username }}</h1>
+<div class="dash-root">
 
-    <div class="grid md:grid-cols-2 gap-8">
-      <div class="bg-white p-8 rounded-xl shadow-lg">
-        <h2 class="text-2xl font-semibold mb-6">My Favorites</h2>
-        <p class="text-gray-600">You haven't saved any properties yet.</p>
-        <a href="{% url 'property_list' %}" class="mt-4 inline-block text-indigo-600 hover:underline">
-          Start browsing →
-        </a>
+  <!-- ══════ SIDEBAR ══════ -->
+  <aside class="sidebar" id="sidebar">
+
+    <!-- User info -->
+    <div class="sidebar-top">
+      <div class="dash-avatar">{{ user.username|first|upper }}</div>
+      <div class="dash-name">{{ user.username }}</div>
+      <div class="dash-role">Tenant Account</div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="sidebar-nav">
+      <div class="nav-group-label">Menu</div>
+
+      <a href="{% url 'dashboard' %}" class="nav-item active">
+        <span class="nav-icon">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        </span>
+        Dashboard
+      </a>
+
+      <a href="{% url 'property_list' %}" class="nav-item">
+        <span class="nav-icon">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </span>
+        Browse Properties
+      </a>
+
+      <a href="#" class="nav-item">
+        <span class="nav-icon">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </span>
+        Saved Homes
+        <span class="nav-badge">3</span>
+      </a>
+
+      <a href="#" class="nav-item">
+        <span class="nav-icon">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </span>
+        Messages
+        <span class="nav-badge">2</span>
+      </a>
+
+      <div class="nav-group-label" style="margin-top: 0.75rem;">Listings</div>
+
+      <a href="{% url 'property_create' %}" class="nav-item">
+        <span class="nav-icon">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        </span>
+        Add Listing
+      </a>
+
+      <a href="#" class="nav-item">
+        <span class="nav-icon">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </span>
+        My Listings
+      </a>
+
+      <div class="nav-group-label" style="margin-top: 0.75rem;">Account</div>
+
+      <a href="#" class="nav-item">
+        <span class="nav-icon">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </span>
+        Profile Settings
+      </a>
+    </nav>
+
+    <!-- Logout -->
+    <div class="sidebar-bottom">
+      <a href="{% url 'logout' %}" class="nav-item" style="color: #f87171;">
+        <span class="nav-icon" style="background: rgba(239,68,68,0.12);">
+          <svg width="16" height="16" fill="none" stroke="#f87171" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </span>
+        Log Out
+      </a>
+    </div>
+  </aside>
+
+  <!-- ══════ MAIN CONTENT ══════ -->
+  <main class="dash-main">
+
+    <!-- Header -->
+    <div class="dash-header fade-in d1">
+      <div>
+        <div class="dash-greeting">
+          Good day, {{ user.username }} <span class="wave">👋</span>
+        </div>
+        <div class="dash-subtext">Here's what's happening with your NaijaNest account.</div>
       </div>
+      <a href="{% url 'property_create' %}" class="dash-cta-btn">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Listing
+      </a>
+    </div>
 
-      <div class="bg-white p-8 rounded-xl shadow-lg">
-        <h2 class="text-2xl font-semibold mb-6">My Inquiries</h2>
-        <p class="text-gray-600">No messages yet.</p>
+    <!-- Stat cards -->
+    <div class="stats-grid fade-in d2">
+      <div class="stat-card green">
+        <span class="stat-delta up">↑ New</span>
+        <div class="stat-icon green">🏠</div>
+        <div class="stat-num">0</div>
+        <div class="stat-label">My Listings</div>
+      </div>
+      <div class="stat-card gold">
+        <span class="stat-delta flat">—</span>
+        <div class="stat-icon gold">❤️</div>
+        <div class="stat-num">3</div>
+        <div class="stat-label">Saved Homes</div>
+      </div>
+      <div class="stat-card blue">
+        <span class="stat-delta up">↑ 2 new</span>
+        <div class="stat-icon blue">💬</div>
+        <div class="stat-num">2</div>
+        <div class="stat-label">Messages</div>
+      </div>
+      <div class="stat-card purple">
+        <span class="stat-delta flat">—</span>
+        <div class="stat-icon purple">👁️</div>
+        <div class="stat-num">14</div>
+        <div class="stat-label">Profile Views</div>
       </div>
     </div>
-  </div>
+
+    <!-- Content grid -->
+    <div class="content-grid">
+
+      <!-- LEFT COLUMN -->
+      <div>
+
+        <!-- My Listings -->
+        <div class="section-card fade-in d3" style="margin-bottom: 1.5rem;">
+          <div class="section-card-head">
+            <span class="section-card-title">My Listings</span>
+            <a href="{% url 'property_create' %}" class="section-card-link">+ Add New</a>
+          </div>
+
+          <!-- Empty state — replace with {% for %} loop once listings are in DB -->
+          <div class="empty-state">
+            <div class="empty-state-icon">🏗️</div>
+            <p>You haven't listed any properties yet.<br>It's free and takes less than 5 minutes.</p>
+            <a href="{% url 'property_create' %}">List Your First Property</a>
+          </div>
+
+          <!--
+          ─ TEMPLATE for when listings exist ─
+          Uncomment and use this block when you wire up the DB:
+
+          {% for property in user_listings %}
+          <div class="prop-row">
+            <img src="{{ property.image.url }}" alt="{{ property.title }}" class="prop-row-img">
+            <div class="prop-row-info">
+              <div class="prop-row-name">{{ property.title }}</div>
+              <div class="prop-row-loc">
+                <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                {{ property.location }}
+              </div>
+            </div>
+            <span class="prop-status active">Active</span>
+          </div>
+          {% empty %}
+          ... empty state ...
+          {% endfor %}
+          -->
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="section-card fade-in d4">
+          <div class="section-card-head">
+            <span class="section-card-title">Recent Activity</span>
+            <a href="#" class="section-card-link">View all</a>
+          </div>
+
+          <div class="activity-item">
+            <div class="activity-dot view">👁️</div>
+            <div>
+              <div class="activity-text">You viewed <strong>3-Bed Apartment in Lekki Phase 1</strong></div>
+              <div class="activity-time">2 hours ago</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-dot save">❤️</div>
+            <div>
+              <div class="activity-text">You saved <strong>2-Bed Shortlet in Victoria Island</strong></div>
+              <div class="activity-time">Yesterday, 4:32 PM</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-dot message">💬</div>
+            <div>
+              <div class="activity-text"><strong>Alhaji Musa</strong> replied to your inquiry about the Surulere duplex</div>
+              <div class="activity-time">Yesterday, 1:15 PM</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-dot listing">🏠</div>
+            <div>
+              <div class="activity-text">You created your NaijaNest account — welcome!</div>
+              <div class="activity-time">{{ user.date_joined|date:"N j, Y" }}</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div>
+
+        <!-- Profile completion -->
+        <div class="profile-banner fade-in d2">
+          <div class="profile-banner-title">Complete Your Profile</div>
+          <p>Add your phone number and photo to get faster responses from landlords.</p>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progressFill"></div>
+          </div>
+          <div class="progress-label">60% complete</div>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="quick-actions fade-in d3">
+          <a href="{% url 'property_list' %}" class="quick-btn">
+            <span class="quick-btn-icon">🔍</span>
+            Browse Homes
+          </a>
+          <a href="{% url 'property_create' %}" class="quick-btn">
+            <span class="quick-btn-icon">➕</span>
+            Add Listing
+          </a>
+          <a href="#" class="quick-btn">
+            <span class="quick-btn-icon">💬</span>
+            Messages
+          </a>
+          <a href="#" class="quick-btn">
+            <span class="quick-btn-icon">⚙️</span>
+            Settings
+          </a>
+        </div>
+
+        <!-- Saved homes -->
+        <div class="section-card fade-in d4">
+          <div class="section-card-head">
+            <span class="section-card-title">Saved Homes</span>
+            <a href="#" class="section-card-link">View all</a>
+          </div>
+
+          <div class="saved-card">
+            <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=200&q=80" alt="Lekki Apt" class="saved-img">
+            <div class="saved-info">
+              <div class="saved-name">3-Bed Apartment, Lekki</div>
+              <div class="saved-price">₦3.2M / yr</div>
+            </div>
+            <button class="saved-remove" aria-label="Remove">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <div class="saved-card">
+            <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=200&q=80" alt="VI Apt" class="saved-img">
+            <div class="saved-info">
+              <div class="saved-name">2-Bed Shortlet, VI</div>
+              <div class="saved-price">₦85k / night</div>
+            </div>
+            <button class="saved-remove" aria-label="Remove">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <div class="saved-card">
+            <img src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=200&q=80" alt="Ikeja House" class="saved-img">
+            <div class="saved-info">
+              <div class="saved-name">4-Bed Duplex, Ikeja</div>
+              <div class="saved-price">₦5.5M / yr</div>
+            </div>
+            <button class="saved-remove" aria-label="Remove">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </div><!-- /content-grid -->
+
+  </main>
+</div>
+
+<!-- Mobile sidebar toggle button -->
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+</button>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+  // Mobile sidebar toggle
+  const sidebar       = document.getElementById('sidebar');
+  const sidebarToggle = document.getElementById('sidebarToggle');
+
+  sidebarToggle.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+  });
+
+  // Close sidebar when clicking outside on mobile
+  document.addEventListener('click', (e) => {
+    if (window.innerWidth <= 768 &&
+        !sidebar.contains(e.target) &&
+        !sidebarToggle.contains(e.target)) {
+      sidebar.classList.remove('open');
+    }
+  });
+
+  // Animate progress bar on load
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      const fill = document.getElementById('progressFill');
+      if (fill) fill.style.width = '60%';
+    }, 400);
+  });
+
+  // Remove saved home on × click (UI only — wire to Django later)
+  document.querySelectorAll('.saved-remove').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const card = btn.closest('.saved-card');
+      card.style.transition = 'opacity 0.3s, transform 0.3s';
+      card.style.opacity = '0';
+      card.style.transform = 'translateX(12px)';
+      setTimeout(() => card.remove(), 300);
+    });
+  });
+</script>
 {% endblock %}

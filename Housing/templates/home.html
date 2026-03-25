@@ -2,155 +2,984 @@
 
 {% block title %}NaijaNest – Find Your Dream Home in Lagos{% endblock %}
 
+{% block extra_head %}
+<style>
+  /* ── Page-level tokens ── */
+  :root {
+    --green:      #16a34a;
+    --green-dark: #14532d;
+    --gold:       #f59e0b;
+    --ink:        #0d1f12;
+    --mist:       #f0f7f2;
+  }
+
+  /* ── Hero ── */
+  .hero-section {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background-image: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=90');
+    background-size: cover;
+    background-position: center;
+    transform: scale(1.06);
+    animation: heroZoom 12s ease-out forwards;
+  }
+  @keyframes heroZoom {
+    from { transform: scale(1.06); }
+    to   { transform: scale(1.0); }
+  }
+
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(10, 22, 40, 0.82) 0%,
+      rgba(10, 40, 20, 0.70) 50%,
+      rgba(5, 15, 10, 0.88) 100%
+    );
+  }
+
+  /* Grain texture overlay */
+  .hero-grain {
+    position: absolute;
+    inset: 0;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-size: 200px;
+  }
+
+  /* Animated tag line */
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(22, 163, 74, 0.18);
+    border: 1px solid rgba(22, 163, 74, 0.45);
+    color: #86efac;
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+  .hero-tag .dot {
+    width: 6px; height: 6px;
+    background: #4ade80;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  /* Hero heading */
+  .hero-h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: #fff;
+  }
+  .hero-h1 .accent {
+    color: var(--gold);
+    position: relative;
+    display: inline-block;
+  }
+  /* Underline swish on accent word */
+  .hero-h1 .accent::after {
+    content: '';
+    position: absolute;
+    bottom: -4px; left: 0; right: 0;
+    height: 3px;
+    background: var(--gold);
+    border-radius: 2px;
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: swish 0.6s 0.8s ease forwards;
+  }
+  @keyframes swish {
+    to { transform: scaleX(1); }
+  }
+
+  /* Staggered fade-up */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(24px);
+    animation: fadeUp 0.7s ease forwards;
+  }
+  .fade-up.d1 { animation-delay: 0.15s; }
+  .fade-up.d2 { animation-delay: 0.30s; }
+  .fade-up.d3 { animation-delay: 0.45s; }
+  .fade-up.d4 { animation-delay: 0.60s; }
+  .fade-up.d5 { animation-delay: 0.75s; }
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Stats strip in hero */
+  .stat-strip {
+    display: flex;
+    gap: 2rem;
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255,255,255,0.12);
+  }
+  .stat-item { text-align: left; }
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.55);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 3px;
+  }
+
+  /* ── Search card ── */
+  .search-card {
+    position: relative;
+    z-index: 20;
+    margin-top: -72px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.06);
+    padding: 2rem 2rem 1.5rem;
+    border: 1px solid rgba(0,0,0,0.05);
+  }
+
+  .search-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .search-input {
+    width: 100%;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-size: 0.9rem;
+    color: #111827;
+    background: #fafafa;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: 'DM Sans', sans-serif;
+    appearance: none;
+  }
+  .search-input:focus {
+    outline: none;
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.1);
+    background: #fff;
+  }
+
+  .search-btn {
+    width: 100%;
+    background: var(--green);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    font-family: 'DM Sans', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .search-btn:hover { background: #15803d; transform: translateY(-1px); }
+  .search-btn:active { transform: translateY(0); }
+
+  /* ── Section headings ── */
+  .section-eyebrow {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 0.75rem;
+  }
+  .section-h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.9rem, 4vw, 2.75rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    line-height: 1.1;
+  }
+
+  /* ── Property cards ── */
+  .prop-card {
+    background: #fff;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid #e9f0eb;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    position: relative;
+  }
+  .prop-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.10);
+  }
+  .prop-card-img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s ease;
+  }
+  .prop-card:hover .prop-card-img { transform: scale(1.04); }
+  .prop-card-img-wrap { overflow: hidden; }
+
+  .prop-badge {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: var(--green);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 100px;
+  }
+
+  .prop-fav {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 34px; height: 34px;
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(4px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .prop-fav:hover { background: #fff; }
+
+  .prop-body { padding: 1.25rem 1.5rem 1.5rem; }
+  .prop-location {
+    font-size: 0.75rem;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+  .prop-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--ink);
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+  .prop-features {
+    display: flex;
+    gap: 12px;
+    font-size: 0.78rem;
+    color: #6b7280;
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .prop-feature {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .prop-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .prop-price {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.15rem;
+    color: var(--green);
+  }
+  .prop-price span {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    font-size: 0.75rem;
+    color: #9ca3af;
+  }
+  .prop-cta {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--green);
+    padding: 7px 16px;
+    border-radius: 8px;
+    border: 1.5px solid #bbf7d0;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .prop-cta:hover {
+    background: var(--green);
+    color: #fff;
+    border-color: var(--green);
+  }
+
+  /* ── Trust / Why section ── */
+  .trust-section { background: var(--mist); }
+  .trust-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 2rem 1.75rem;
+    border: 1px solid #d1fae5;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.25s, box-shadow 0.25s;
+  }
+  .trust-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(22,163,74,0.08);
+  }
+  .trust-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--green), #34d399);
+  }
+  .trust-icon {
+    width: 56px; height: 56px;
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    margin-bottom: 1.25rem;
+  }
+  .trust-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 0.6rem;
+  }
+  .trust-card p { font-size: 0.9rem; color: #4b5563; line-height: 1.65; }
+
+  /* ── Neighbourhood strip ── */
+  .hood-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 1.25rem;
+    border-radius: 16px;
+    background-size: cover;
+    background-position: center;
+    min-height: 140px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.25s;
+    text-decoration: none;
+  }
+  .hood-chip:hover { transform: scale(1.03); }
+  .hood-chip::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 55%);
+  }
+  .hood-chip-label {
+    position: relative;
+    z-index: 1;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #fff;
+  }
+  .hood-chip-count {
+    position: relative;
+    z-index: 1;
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.7);
+  }
+
+  /* ── FAQ ── */
+  .faq-section { background: #fff; }
+  details.faq-item {
+    border-radius: 14px;
+    border: 1.5px solid #e5e7eb;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  details.faq-item[open] { border-color: #bbf7d0; }
+  details.faq-item summary {
+    padding: 1.25rem 1.5rem;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--ink);
+    user-select: none;
+  }
+  details.faq-item summary::-webkit-details-marker { display: none; }
+  details.faq-item summary .faq-icon {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--mist);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s, transform 0.3s;
+    font-size: 0.9rem;
+    color: var(--green);
+    font-weight: 700;
+  }
+  details.faq-item[open] summary .faq-icon {
+    background: #dcfce7;
+    transform: rotate(45deg);
+  }
+  details.faq-item .faq-body {
+    padding: 0 1.5rem 1.25rem;
+    font-size: 0.9rem;
+    color: #4b5563;
+    line-height: 1.7;
+    border-top: 1px solid #f3f4f6;
+  }
+
+  /* ── CTA Banner ── */
+  .cta-banner {
+    background: linear-gradient(135deg, #14532d 0%, #166534 50%, #15803d 100%);
+    border-radius: 24px;
+    padding: 4rem 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-banner::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 240px; height: 240px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+  .cta-banner::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; left: -40px;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: rgba(245,158,11,0.07);
+  }
+  .cta-banner h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.03em;
+    margin-bottom: 1rem;
+  }
+  .cta-banner p { color: rgba(255,255,255,0.75); margin-bottom: 2rem; font-size: 1rem; }
+  .cta-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--gold);
+    color: #0d1f12;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 14px 32px;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.2s;
+    margin: 0 8px;
+  }
+  .cta-primary:hover { background: #fbbf24; transform: translateY(-2px); }
+  .cta-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 14px 32px;
+    border-radius: 12px;
+    border: 1.5px solid rgba(255,255,255,0.25);
+    text-decoration: none;
+    transition: background 0.2s;
+    margin: 0 8px;
+  }
+  .cta-ghost:hover { background: rgba(255,255,255,0.18); }
+</style>
+{% endblock %}
+
 {% block content %}
 
-  <!-- 1. Hero Section -->
-  <section class="relative min-h-[90vh] flex items-center justify-center bg-cover bg-center bg-no-repeat overflow-hidden"
-           style="background-image: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920')">
-    <div class="absolute inset-0 bg-black/70"></div>
+<!-- ══════════════════════════════════════════
+     HERO
+══════════════════════════════════════════ -->
+<section class="hero-section">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-grain"></div>
 
-    <div class="relative z-10 max-w-6xl mx-auto px-6 text-center text-white">
-      <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight drop-shadow-2xl mb-6">
-        Find Your Dream Home in Lagos
-      </h1>
+  <div class="relative z-10 max-w-5xl mx-auto px-6 pt-32 pb-40 w-full">
+    <div class="fade-up d1">
+      <span class="hero-tag">
+        <span class="dot"></span>
+        Lagos's most trusted housing platform
+      </span>
+    </div>
 
-      <p class="text-xl md:text-2xl mb-10 max-w-4xl mx-auto drop-shadow-lg">
-        Verified listings, real photos, and honest details. No wasted trips.
+    <h1 class="hero-h1 fade-up d2 mb-6">
+      Find Your<br>
+      Dream Home in<br>
+      <span class="accent">Lagos</span>
+    </h1>
+
+    <p class="fade-up d3 text-lg text-white/75 max-w-xl leading-relaxed mb-10">
+      Verified listings, real photos, zero agent drama.<br>
+      Browse thousands of apartments, houses &amp; shortlets — all legit.
+    </p>
+
+    <div class="fade-up d4 flex flex-wrap gap-4">
+      <a href="{% url 'property_list' %}"
+         class="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-sm"
+         style="background: var(--green); color: #fff; transition: background 0.2s;"
+         onmouseover="this.style.background='#15803d'" onmouseout="this.style.background='var(--green)'">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Browse Homes
+      </a>
+      <a href="#"
+         class="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-sm text-white"
+         style="background: rgba(255,255,255,0.1); border: 1.5px solid rgba(255,255,255,0.3); backdrop-filter: blur(8px); transition: background 0.2s;"
+         onmouseover="this.style.background='rgba(255,255,255,0.18)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+        + List Your Property Free
+      </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="fade-up d5 stat-strip flex-wrap">
+      <div class="stat-item">
+        <div class="stat-num">2,400+</div>
+        <div class="stat-label">Happy tenants</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">850+</div>
+        <div class="stat-label">Active listings</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Verified landlords</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">0</div>
+        <div class="stat-label">Agent fees</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     SEARCH BAR
+══════════════════════════════════════════ -->
+<div class="relative z-20 px-6">
+  <div class="max-w-5xl mx-auto search-card">
+    <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Quick search</p>
+    <form class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+      <div>
+        <label class="search-label">Property Type</label>
+        <select class="search-input">
+          <option>All Properties</option>
+          <option>Apartment</option>
+          <option>Duplex</option>
+          <option>Bungalow</option>
+          <option>Land</option>
+          <option>Short Let</option>
+        </select>
+      </div>
+      <div>
+        <label class="search-label">Location</label>
+        <select class="search-input">
+          <option>All Lagos</option>
+          <option>Lekki</option>
+          <option>Ikoyi</option>
+          <option>Victoria Island</option>
+          <option>Surulere</option>
+          <option>Ikeja</option>
+          <option>Ajah</option>
+          <option>Yaba</option>
+        </select>
+      </div>
+      <div>
+        <label class="search-label">Bedrooms</label>
+        <select class="search-input">
+          <option>Any</option>
+          <option>Self-con</option>
+          <option>1 Bedroom</option>
+          <option>2 Bedrooms</option>
+          <option>3 Bedrooms</option>
+          <option>4+ Bedrooms</option>
+        </select>
+      </div>
+      <div>
+        <label class="search-label">Max Price (₦)</label>
+        <select class="search-input">
+          <option>Any Budget</option>
+          <option>Under 500k</option>
+          <option>500k – 1M</option>
+          <option>1M – 2M</option>
+          <option>2M – 5M</option>
+          <option>5M+</option>
+        </select>
+      </div>
+      <div class="flex items-end">
+        <button type="submit" class="search-btn">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Search
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     BROWSE BY NEIGHBOURHOOD
+══════════════════════════════════════════ -->
+<section class="py-20 px-6" style="background: var(--mist);">
+  <div class="max-w-7xl mx-auto">
+    <div class="mb-10">
+      <span class="section-eyebrow">Explore by area</span>
+      <h2 class="section-h2">Popular Neighbourhoods</h2>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <a href="#" class="hood-chip" style="background-image: url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80')">
+        <span class="hood-chip-label">Lekki</span>
+        <span class="hood-chip-count">142 listings</span>
+      </a>
+      <a href="#" class="hood-chip" style="background-image: url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&q=80')">
+        <span class="hood-chip-label">Ikoyi</span>
+        <span class="hood-chip-count">89 listings</span>
+      </a>
+      <a href="#" class="hood-chip" style="background-image: url('https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=400&q=80')">
+        <span class="hood-chip-label">Victoria Island</span>
+        <span class="hood-chip-count">67 listings</span>
+      </a>
+      <a href="#" class="hood-chip" style="background-image: url('https://images.unsplash.com/photo-1599427303058-f04cbcf4756f?w=400&q=80')">
+        <span class="hood-chip-label">Surulere</span>
+        <span class="hood-chip-count">210 listings</span>
+      </a>
+      <a href="#" class="hood-chip" style="background-image: url('https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&q=80')">
+        <span class="hood-chip-label">Ikeja</span>
+        <span class="hood-chip-count">178 listings</span>
+      </a>
+      <a href="#" class="hood-chip" style="background-image: url('https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=400&q=80')">
+        <span class="hood-chip-label">Ajah</span>
+        <span class="hood-chip-count">95 listings</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     FEATURED PROPERTIES
+══════════════════════════════════════════ -->
+<section class="py-20 px-6 bg-white">
+  <div class="max-w-7xl mx-auto">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4">
+      <div>
+        <span class="section-eyebrow">Hand-picked for you</span>
+        <h2 class="section-h2">Featured Properties</h2>
+      </div>
+      <a href="{% url 'property_list' %}" class="text-sm font-semibold text-green-600 hover:text-green-700 flex items-center gap-1 whitespace-nowrap">
+        View all listings
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+      <!-- Card 1 -->
+      <div class="prop-card">
+        <span class="prop-badge">For Rent</span>
+        <button class="prop-fav" aria-label="Save">
+          <svg width="16" height="16" fill="none" stroke="#6b7280" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
+        <div class="prop-card-img-wrap">
+          <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80" alt="Lekki Apartment" class="prop-card-img">
+        </div>
+        <div class="prop-body">
+          <div class="prop-location">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Lekki Phase 1, Lagos
+          </div>
+          <div class="prop-title">Modern 3-Bedroom Apartment</div>
+          <div class="prop-features">
+            <span class="prop-feature">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+              3 Bed
+            </span>
+            <span class="prop-feature">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 12h16M4 6h16M4 18h7"/></svg>
+              3 Bath
+            </span>
+            <span class="prop-feature">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+              145 m²
+            </span>
+          </div>
+          <div class="prop-footer">
+            <div class="prop-price">₦3.2M <span>/ year</span></div>
+            <a href="#" class="prop-cta">View Details</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="prop-card">
+        <span class="prop-badge" style="background: var(--gold); color: #0d1f12;">Short Let</span>
+        <button class="prop-fav" aria-label="Save">
+          <svg width="16" height="16" fill="none" stroke="#6b7280" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
+        <div class="prop-card-img-wrap">
+          <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80" alt="VI Apartment" class="prop-card-img">
+        </div>
+        <div class="prop-body">
+          <div class="prop-location">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Victoria Island, Lagos
+          </div>
+          <div class="prop-title">Luxury 2-Bedroom Shortlet</div>
+          <div class="prop-features">
+            <span class="prop-feature">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+              2 Bed
+            </span>
+            <span class="prop-feature">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 12h16M4 6h16M4 18h7"/></svg>
+              2 Bath
+            </span>
+            <span class="prop-feature">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+              90 m²
+            </span>
+          </div>
+          <div class="prop-footer">
+            <div class="prop-price">₦85k <span>/ night</span></div>
+            <a href="#" class="prop-cta">View Details</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="prop-card">
+        <span class="prop-badge">For Rent</span>
+        <button class="prop-fav" aria-label="Save">
+          <svg width="16" height="16" fill="none" stroke="#6b7280" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
+        <div class="prop-card-img-wrap">
+          <img src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&q=80" alt="Surulere House" class="prop-card-img">
+        </div>
+        <div class="prop-body">
+          <div class="prop-location">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Surulere, Lagos
+          </div>
+          <div class="prop-title">Spacious 4-Bedroom Duplex</div>
+          <div class="prop-features">
+            <span class="prop-feature">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+              4 Bed
+            </span>
+            <span class="prop-feature">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 12h16M4 6h16M4 18h7"/></svg>
+              4 Bath
+            </span>
+            <span class="prop-feature">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+              220 m²
+            </span>
+          </div>
+          <div class="prop-footer">
+            <div class="prop-price">₦5.5M <span>/ year</span></div>
+            <a href="#" class="prop-cta">View Details</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     WHY NAIIJANEST
+══════════════════════════════════════════ -->
+<section class="trust-section py-20 px-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-14">
+      <span class="section-eyebrow">Why choose us</span>
+      <h2 class="section-h2">Built for Lagos Renters</h2>
+      <p class="mt-3 text-gray-500 max-w-xl mx-auto text-sm leading-relaxed">
+        We know the Lagos rental market is stressful. NaijaNest fixes every part of it.
       </p>
+    </div>
 
-      <div class="flex flex-col sm:flex-row justify-center gap-6">
-        <a href="{% url 'property_list' %}" class="px-10 py-5 bg-indigo-600 text-white font-bold text-lg rounded-xl hover:bg-indigo-700 transition transform hover:scale-105 shadow-xl">
-          Browse Homes
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="trust-card">
+        <div class="trust-icon">🛡️</div>
+        <h3>100% Verified Listings</h3>
+        <p>No fake agents. Every property is physically inspected and landlord-confirmed before going live.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon">🚀</div>
+        <h3>Save Time &amp; Money</h3>
+        <p>Watch real video tours, ask questions online — only visit properties you genuinely love.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon">🤝</div>
+        <h3>Direct Landlord Chat</h3>
+        <p>Zero middlemen. Message landlords directly, negotiate prices, and close deals faster.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon">📸</div>
+        <h3>Real Photos &amp; Videos</h3>
+        <p>We require honest photos taken on the day of listing — no old or stolen images allowed.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon">💳</div>
+        <h3>Zero Agent Fees</h3>
+        <p>Tenants pay nothing extra. No hidden charges, no "agreement fees" to unknown agents.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon">🔔</div>
+        <h3>Instant Alerts</h3>
+        <p>Set your criteria once and get notified the moment a matching property is listed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     FAQ
+══════════════════════════════════════════ -->
+<section class="faq-section py-20 px-6">
+  <div class="max-w-3xl mx-auto">
+    <div class="text-center mb-14">
+      <span class="section-eyebrow">Got questions?</span>
+      <h2 class="section-h2">Frequently Asked</h2>
+    </div>
+
+    <div class="space-y-4">
+      <details class="faq-item">
+        <summary>
+          How do I know the listings are real?
+          <span class="faq-icon">+</span>
+        </summary>
+        <div class="faq-body">
+          Every property is manually verified before going live. We require real photos taken on the day of listing, video walkthroughs, and landlord ID confirmation. If anything is fishy, it's flagged immediately.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>
+          Do I have to pay agent fees?
+          <span class="faq-icon">+</span>
+        </summary>
+        <div class="faq-body">
+          No. NaijaNest connects you directly with landlords or verified agents. There are no hidden fees, no agency charges, and no "platform fees" for tenants. Listing is also free for landlords.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>
+          Can I ask questions before visiting?
+          <span class="faq-icon">+</span>
+        </summary>
+        <div class="faq-body">
+          Yes — message landlords directly to ask about water supply, power (NEPA vs generator), security, parking, neighbours, and anything else. Only travel when you're confident it's the right place.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>
+          How do I list my property?
+          <span class="faq-icon">+</span>
+        </summary>
+        <div class="faq-body">
+          Create a free account, click "List Property", fill in the details, upload real photos, and submit. Our team will review and publish it within 24 hours. It's completely free.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>
+          What areas of Lagos are covered?
+          <span class="faq-icon">+</span>
+        </summary>
+        <div class="faq-body">
+          We currently cover all major areas including Lekki, Ikoyi, Victoria Island, Surulere, Ikeja, Ajah, Yaba, Magodo, Gbagada, and more. We're expanding every week.
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     CTA BANNER
+══════════════════════════════════════════ -->
+<section class="py-20 px-6 bg-white">
+  <div class="max-w-4xl mx-auto">
+    <div class="cta-banner">
+      <h2>Ready to Find Your<br>Next Home?</h2>
+      <p>Join 2,400+ Lagosians who found their place without stress.</p>
+      <div class="flex flex-wrap justify-center gap-3">
+        <a href="{% url 'property_list' %}" class="cta-primary">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Browse Listings
         </a>
-        <a href="#" class="px-10 py-5 bg-white/10 backdrop-blur-md border border-white/30 text-white font-bold text-lg rounded-xl hover:bg-white/20 transition">
-          List Your Property Free
+        <a href="{% url 'signup' %}" class="cta-ghost">
+          Create Free Account →
         </a>
       </div>
-
-      <p class="mt-10 text-lg opacity-90">
-        Already helped <span class="font-bold text-indigo-400">2,400+</span> Lagosians find their perfect home
-      </p>
     </div>
-  </section>
-
-  <!-- 2. Featured Properties -->
-  <section class="py-20 bg-gray-50">
-    <div class="max-w-7xl mx-auto px-6">
-      <h2 class="text-4xl font-bold text-center mb-16">Featured Properties</h2>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-        <!-- Property 1 -->
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all">
-          <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800" alt="Lekki Luxury Apartment" class="w-full h-64 object-cover">
-          <div class="p-6">
-            <h3 class="text-2xl font-semibold mb-2">Lekki Luxury Apartment</h3>
-            <p class="text-gray-600 mb-4">Lekki, Lagos • 3 Bed • 2 Bath</p>
-            <div class="flex justify-between items-center">
-              <span class="text-2xl font-bold text-indigo-700">₦2,500,000/mo</span>
-              <a href="#" class="text-indigo-600 hover:underline">View Details</a>
-            </div>
-          </div>
-        </div>
-
-        <!-- Property 2 -->
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all">
-          <img src="https://images.unsplash.com/photo-1600563438938-a9a0b7c2f2a3?w=800" alt="Ikoyi Modern Villa" class="w-full h-64 object-cover">
-          <div class="p-6">
-            <h3 class="text-2xl font-semibold mb-2">Ikoyi Modern Villa</h3>
-            <p class="text-gray-600 mb-4">Ikoyi, Lagos • 4 Bed • 4 Bath</p>
-            <div class="flex justify-between items-center">
-              <span class="text-2xl font-bold text-indigo-700">₦4,000,000/mo</span>
-              <a href="#" class="text-indigo-600 hover:underline">View Details</a>
-            </div>
-          </div>
-        </div>
-
-        <!-- Property 3 -->
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all">
-          <img src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800" alt="Surulere Family Home" class="w-full h-64 object-cover">
-          <div class="p-6">
-            <h3 class="text-2xl font-semibold mb-2">Surulere Family Home</h3>
-            <p class="text-gray-600 mb-4">Surulere, Lagos • 3 Bed • 2 Bath</p>
-            <div class="flex justify-between items-center">
-              <span class="text-2xl font-bold text-indigo-700">₦1,800,000/mo</span>
-              <a href="#" class="text-indigo-600 hover:underline">View Details</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 3. Why Choose Us -->
-  <section class="py-20 bg-white">
-    <div class="max-w-7xl mx-auto px-6">
-      <h2 class="text-4xl md:text-5xl font-bold text-center mb-16">Why Choose NaijaNest?</h2>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-        <div class="p-8 rounded-2xl glass">
-          <div class="text-6xl mb-6">🛡️</div>
-          <h3 class="text-2xl font-bold mb-4">100% Verified Listings</h3>
-          <p class="text-gray-700 text-lg">
-            No fake agents, no photoshopped pictures. Every home is physically checked and landlord-verified.
-          </p>
-        </div>
-
-        <div class="p-8 rounded-2xl glass">
-          <div class="text-6xl mb-6">📍</div>
-          <h3 class="text-2xl font-bold mb-4">Save Transport Money</h3>
-          <p class="text-gray-700 text-lg">
-            See real videos, ask real questions, and only visit properties you actually like.
-          </p>
-        </div>
-
-        <div class="p-8 rounded-2xl glass">
-          <div class="text-6xl mb-6">🤝</div>
-          <h3 class="text-2xl font-bold mb-4">Direct Landlord Chat</h3>
-          <p class="text-gray-700 text-lg">
-            No middle-man wahala. Talk directly, negotiate freely, close faster.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- FAQs -->
-  <section class="py-20 bg-gray-50">
-    <div class="max-w-4xl mx-auto px-6">
-      <h2 class="text-4xl font-bold text-center mb-16">Frequently Asked Questions</h2>
-
-      <div class="space-y-6">
-        <details class="group rounded-xl bg-white p-6 shadow-md">
-          <summary class="flex justify-between items-center cursor-pointer text-xl font-semibold">
-            <span>How do I know the listings are real?</span>
-            <span class="transition group-open:rotate-180">▼</span>
-          </summary>
-          <div class="mt-4 text-gray-600">
-            Every property is manually verified. We require real photos, video tours, and landlord ID confirmation.
-          </div>
-        </details>
-
-        <details class="group rounded-xl bg-white p-6 shadow-md">
-          <summary class="flex justify-between items-center cursor-pointer text-xl font-semibold">
-            <span>Do I have to pay agent fees?</span>
-            <span class="transition group-open:rotate-180">▼</span>
-          </summary>
-          <div class="mt-4 text-gray-600">
-            No. We connect you directly with landlords or verified agents — no extra fees.
-          </div>
-        </details>
-
-        <details class="group rounded-xl bg-white p-6 shadow-md">
-          <summary class="flex justify-between items-center cursor-pointer text-xl font-semibold">
-            <span>Can I ask questions before viewing?</span>
-            <span class="transition group-open:rotate-180">▼</span>
-          </summary>
-          <div class="mt-4 text-gray-600">
-            Yes — message landlords directly about water, power, security, and more.
-          </div>
-        </details>
-      </div>
-    </div>
-  </section>
+  </div>
+</section>
 
 {% endblock %}

@@ -1,0 +1,394 @@
+{% extends 'base.html' %}
+{% block title %}Verified Agents – NaijaNest{% endblock %}
+
+{% block extra_head %}
+<style>
+  :root {
+    --green: #16a34a; --green-light: #dcfce7; --green-mid: #bbf7d0;
+    --gold: #f59e0b; --ink: #0d1f12; --mist: #f0f7f2;
+  }
+
+  /* ── Hero ── */
+  .agents-hero {
+    background: var(--ink); padding: 8rem 1.5rem 5rem;
+    text-align: center; position: relative; overflow: hidden;
+  }
+  .agents-hero::before {
+    content: ''; position: absolute; inset: 0;
+    background-image: url('https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?w=1600&q=80');
+    background-size: cover; background-position: center; opacity: 0.15;
+  }
+  .agents-hero::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(10,22,40,0.92) 0%, rgba(10,50,20,0.85) 100%);
+  }
+  .agents-hero-content { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }
+  .agents-eyebrow {
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: #4ade80; display: block; margin-bottom: 1rem;
+  }
+  .agents-hero h1 {
+    font-family: 'Arial Black', Impact, sans-serif;
+    font-size: clamp(2rem, 5vw, 3rem); font-weight: 900;
+    color: #fff; line-height: 1.1; margin-bottom: 1.25rem;
+  }
+  .agents-hero h1 span { color: var(--gold); }
+  .agents-hero p { font-size: 0.95rem; color: rgba(255,255,255,0.65); line-height: 1.8; margin-bottom: 2rem; }
+  .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+  .hero-btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--green); color: #fff; font-weight: 700;
+    padding: 12px 28px; border-radius: 12px; text-decoration: none;
+    transition: background 0.2s, transform 0.15s; font-size: 0.9rem;
+  }
+  .hero-btn-primary:hover { background: #15803d; transform: translateY(-2px); }
+  .hero-btn-ghost {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.1); color: #fff; font-weight: 600;
+    padding: 12px 28px; border-radius: 12px; text-decoration: none;
+    border: 1.5px solid rgba(255,255,255,0.25); transition: background 0.2s; font-size: 0.9rem;
+  }
+  .hero-btn-ghost:hover { background: rgba(255,255,255,0.18); }
+
+  /* ── Why become an agent ── */
+  .why-section { background: #fff; padding: 5rem 1.5rem; }
+  .why-inner { max-width: 1100px; margin: 0 auto; }
+  .section-eyebrow {
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--green); display: block; margin-bottom: 0.75rem;
+  }
+  .section-title {
+    font-family: 'Arial Black', Impact, sans-serif;
+    font-size: clamp(1.6rem, 3.5vw, 2.25rem); font-weight: 900;
+    color: var(--ink); line-height: 1.15;
+  }
+  .why-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.5rem; margin-top: 3rem;
+  }
+  .why-card {
+    background: var(--mist); border-radius: 18px; padding: 2rem;
+    border: 1px solid #d1fae5; transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .why-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.07); }
+  .why-icon {
+    width: 48px; height: 48px; border-radius: 14px;
+    background: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; color: var(--green); margin-bottom: 1.25rem;
+    box-shadow: 0 4px 12px rgba(22,163,74,0.15);
+  }
+  .why-card h3 {
+    font-family: 'Arial Black', Impact, sans-serif;
+    font-size: 0.95rem; font-weight: 900; color: var(--ink); margin-bottom: 0.6rem;
+  }
+  .why-card p { font-size: 0.875rem; color: #4b5563; line-height: 1.7; }
+
+  /* ── Agent cards ── */
+  .agents-section { background: var(--mist); padding: 5rem 1.5rem; }
+  .agents-inner { max-width: 1100px; margin: 0 auto; }
+  .agents-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem; margin-top: 3rem;
+  }
+  .agent-card {
+    background: #fff; border-radius: 20px; padding: 2rem;
+    border: 1px solid #e9f0eb; text-align: center;
+    transition: transform 0.25s, box-shadow 0.25s;
+  }
+  .agent-card:hover { transform: translateY(-5px); box-shadow: 0 20px 50px rgba(0,0,0,0.09); }
+  .agent-avatar-wrap { position: relative; display: inline-block; margin-bottom: 1rem; }
+  .agent-avatar {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--green), #34d399);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Arial Black', Impact, sans-serif;
+    font-size: 1.8rem; font-weight: 900; color: #fff; margin: 0 auto;
+  }
+  .agent-verified-badge {
+    position: absolute; bottom: 2px; right: 2px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--green); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem; border: 2px solid #fff;
+  }
+  .agent-name {
+    font-family: 'Arial Black', Impact, sans-serif;
+    font-weight: 900; font-size: 1rem; color: var(--ink); margin-bottom: 3px;
+  }
+  .agent-title { font-size: 0.78rem; color: var(--green); font-weight: 600; margin-bottom: 0.75rem; }
+  .agent-stats {
+    display: flex; justify-content: center; gap: 1.5rem;
+    padding: 0.875rem 0; border-top: 1px solid #f3f4f6; border-bottom: 1px solid #f3f4f6;
+    margin-bottom: 1rem;
+  }
+  .agent-stat-num {
+    font-family: 'Arial Black', Impact, sans-serif;
+    font-weight: 900; font-size: 1.1rem; color: var(--ink);
+  }
+  .agent-stat-label { font-size: 0.68rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em; }
+  .agent-areas { font-size: 0.78rem; color: #6b7280; margin-bottom: 1rem; }
+  .agent-contact-btn {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    width: 100%; padding: 10px; border-radius: 10px;
+    background: var(--green-light); color: var(--green);
+    font-weight: 700; font-size: 0.82rem; text-decoration: none;
+    border: 1.5px solid var(--green-mid); transition: all 0.2s;
+  }
+  .agent-contact-btn:hover { background: var(--green); color: #fff; border-color: var(--green); }
+
+  /* ── Become an agent CTA ── */
+  .become-section { background: #fff; padding: 5rem 1.5rem; }
+  .become-card {
+    max-width: 900px; margin: 0 auto;
+    background: linear-gradient(135deg, #0d1f12, #14532d);
+    border-radius: 24px; padding: 4rem 3rem; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .become-card::before {
+    content: ''; position: absolute; right: -60px; top: -60px;
+    width: 220px; height: 220px; border-radius: 50%; background: rgba(255,255,255,0.04);
+  }
+  .become-card h2 {
+    font-family: 'Arial Black', Impact, sans-serif;
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem); font-weight: 900;
+    color: #fff; margin-bottom: 1rem;
+  }
+  .become-card p { color: rgba(255,255,255,0.7); margin-bottom: 2rem; font-size: 0.95rem; line-height: 1.7; }
+  .become-steps {
+    display: flex; justify-content: center; gap: 2rem;
+    margin-bottom: 2.5rem; flex-wrap: wrap;
+  }
+  .become-step { text-align: center; color: #fff; }
+  .become-step-num {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Arial Black', Impact, sans-serif; font-weight: 900;
+    font-size: 1rem; margin: 0 auto 0.5rem;
+  }
+  .become-step-label { font-size: 0.78rem; color: rgba(255,255,255,0.65); }
+  .become-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--gold); color: var(--ink); font-weight: 700;
+    padding: 14px 36px; border-radius: 12px; text-decoration: none;
+    font-size: 0.95rem; transition: background 0.2s, transform 0.15s;
+  }
+  .become-btn:hover { background: #fbbf24; transform: translateY(-2px); }
+
+  .fade-in { opacity: 0; transform: translateY(14px); animation: fadeIn 0.5s ease forwards; }
+  .fade-in.d1{animation-delay:0.1s} .fade-in.d2{animation-delay:0.2s} .fade-in.d3{animation-delay:0.3s}
+  @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="agents-hero">
+  <div class="agents-hero-content">
+    <span class="agents-eyebrow fade-in d1">Verified Agents</span>
+    <h1 class="fade-in d2">Find a Trusted Agent or <span>Become One</span></h1>
+    <p class="fade-in d3">
+      Every agent on NaijaNest is verified, reviewed by real tenants, and held to our
+      strict no-scam policy. Browse agents or join our growing network.
+    </p>
+    <div class="hero-btns fade-in d3">
+      <a href="#agents-list" class="hero-btn-primary">
+        <i class="fa-solid fa-magnifying-glass"></i> Browse Agents
+      </a>
+      <a href="{% url 'signup' %}" class="hero-btn-ghost">
+        <i class="fa-solid fa-user-plus"></i> Become an Agent
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Why become an agent -->
+<section class="why-section">
+  <div class="why-inner">
+    <div style="text-align:center; max-width:600px; margin:0 auto;">
+      <span class="section-eyebrow">Why NaijaNest</span>
+      <h2 class="section-title">Why Agents Choose NaijaNest</h2>
+    </div>
+    <div class="why-grid">
+      <div class="why-card fade-in d1">
+        <div class="why-icon"><i class="fa-solid fa-users"></i></div>
+        <h3>Reach More Tenants</h3>
+        <p>Your listings are seen by thousands of active tenants searching for homes across Lagos every day.</p>
+      </div>
+      <div class="why-card fade-in d2">
+        <div class="why-icon"><i class="fa-solid fa-naira-sign"></i></div>
+        <h3>Completely Free</h3>
+        <p>List unlimited properties at zero cost. No subscription fees, no commission, no hidden charges.</p>
+      </div>
+      <div class="why-card fade-in d3">
+        <div class="why-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <h3>Verified Badge</h3>
+        <p>Get a verified badge on your profile that builds trust with tenants and boosts your enquiries.</p>
+      </div>
+      <div class="why-card fade-in d1">
+        <div class="why-icon"><i class="fa-solid fa-chart-line"></i></div>
+        <h3>Track Performance</h3>
+        <p>See how many people viewed each listing, how many enquiries you received, and which listings perform best.</p>
+      </div>
+      <div class="why-card fade-in d2">
+        <div class="why-icon"><i class="fa-solid fa-comment"></i></div>
+        <h3>Direct Messages</h3>
+        <p>Tenants can message you directly through the platform — no need to share your personal number publicly.</p>
+      </div>
+      <div class="why-card fade-in d3">
+        <div class="why-icon"><i class="fa-solid fa-bolt"></i></div>
+        <h3>Fast Approval</h3>
+        <p>Your listings go live within 24 hours of submission after our quick verification check.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Agent listings -->
+<section class="agents-section" id="agents-list">
+  <div class="agents-inner">
+    <div style="text-align:center; max-width:600px; margin:0 auto;">
+      <span class="section-eyebrow">Our Network</span>
+      <h2 class="section-title">Meet Our Verified Agents</h2>
+      <p style="font-size:0.875rem;color:#6b7280;margin-top:0.75rem;">
+        All agents below have been verified by the NaijaNest team.
+      </p>
+    </div>
+
+    <div class="agents-grid">
+
+      <!-- Agent 1 -->
+      <div class="agent-card fade-in d1">
+        <div class="agent-avatar-wrap">
+          <div class="agent-avatar">A</div>
+          <div class="agent-verified-badge"><i class="fa-solid fa-check"></i></div>
+        </div>
+        <div class="agent-name">Alhaji Musa</div>
+        <div class="agent-title">Verified Landlord</div>
+        <div class="agent-stats">
+          <div>
+            <div class="agent-stat-num">12</div>
+            <div class="agent-stat-label">Listings</div>
+          </div>
+          <div>
+            <div class="agent-stat-num">4.9</div>
+            <div class="agent-stat-label">Rating</div>
+          </div>
+          <div>
+            <div class="agent-stat-num">3yr</div>
+            <div class="agent-stat-label">On NaijaNest</div>
+          </div>
+        </div>
+        <div class="agent-areas"><i class="fa-solid fa-location-dot" style="color:var(--green)"></i> Lekki, Ikoyi, Victoria Island</div>
+        <a href="{% url 'property_list' %}" class="agent-contact-btn">
+          <i class="fa-solid fa-house"></i> View Listings
+        </a>
+      </div>
+
+      <!-- Agent 2 -->
+      <div class="agent-card fade-in d2">
+        <div class="agent-avatar-wrap">
+          <div class="agent-avatar" style="background:linear-gradient(135deg,#f59e0b,#f97316)">C</div>
+          <div class="agent-verified-badge"><i class="fa-solid fa-check"></i></div>
+        </div>
+        <div class="agent-name">Chief Emeka</div>
+        <div class="agent-title">Verified Agent</div>
+        <div class="agent-stats">
+          <div>
+            <div class="agent-stat-num">8</div>
+            <div class="agent-stat-label">Listings</div>
+          </div>
+          <div>
+            <div class="agent-stat-num">4.7</div>
+            <div class="agent-stat-label">Rating</div>
+          </div>
+          <div>
+            <div class="agent-stat-num">2yr</div>
+            <div class="agent-stat-label">On NaijaNest</div>
+          </div>
+        </div>
+        <div class="agent-areas"><i class="fa-solid fa-location-dot" style="color:var(--green)"></i> Surulere, Yaba, Gbagada</div>
+        <a href="{% url 'property_list' %}" class="agent-contact-btn">
+          <i class="fa-solid fa-house"></i> View Listings
+        </a>
+      </div>
+
+      <!-- Agent 3 -->
+      <div class="agent-card fade-in d3">
+        <div class="agent-avatar-wrap">
+          <div class="agent-avatar" style="background:linear-gradient(135deg,#3b82f6,#6366f1)">F</div>
+          <div class="agent-verified-badge"><i class="fa-solid fa-check"></i></div>
+        </div>
+        <div class="agent-name">Mrs. Fatima</div>
+        <div class="agent-title">Verified Landlady</div>
+        <div class="agent-stats">
+          <div>
+            <div class="agent-stat-num">6</div>
+            <div class="agent-stat-label">Listings</div>
+          </div>
+          <div>
+            <div class="agent-stat-num">5.0</div>
+            <div class="agent-stat-label">Rating</div>
+          </div>
+          <div>
+            <div class="agent-stat-num">1yr</div>
+            <div class="agent-stat-label">On NaijaNest</div>
+          </div>
+        </div>
+        <div class="agent-areas"><i class="fa-solid fa-location-dot" style="color:var(--green)"></i> Ikeja, Magodo, Ojodu</div>
+        <a href="{% url 'property_list' %}" class="agent-contact-btn">
+          <i class="fa-solid fa-house"></i> View Listings
+        </a>
+      </div>
+
+      <!-- Become an agent card -->
+      {% if not user.is_authenticated %}
+      <div class="agent-card fade-in d1" style="border:2px dashed #d1fae5; background:var(--mist); display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:300px;">
+        <div style="width:64px;height:64px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--green);margin-bottom:1rem;">
+          <i class="fa-solid fa-plus"></i>
+        </div>
+        <div style="font-family:'Arial Black',Impact,sans-serif;font-weight:900;color:var(--ink);margin-bottom:0.5rem;">Be Listed Here</div>
+        <div style="font-size:0.82rem;color:#6b7280;text-align:center;margin-bottom:1.25rem;max-width:200px;">Sign up as an agent and start listing your properties today.</div>
+        <a href="{% url 'signup' %}" style="background:var(--green);color:#fff;font-weight:700;padding:10px 22px;border-radius:10px;text-decoration:none;font-size:0.82rem;">
+          Join as Agent
+        </a>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</section>
+
+<!-- Become an agent -->
+<section class="become-section">
+  <div class="become-card fade-in d1">
+    <h2>Ready to List Your Properties?</h2>
+    <p>
+      Join our network of verified agents and landlords. It's free, easy and takes less than 5 minutes to get started.
+    </p>
+    <div class="become-steps">
+      <div class="become-step">
+        <div class="become-step-num">1</div>
+        <div class="become-step-label">Create Account</div>
+      </div>
+      <div class="become-step">
+        <div class="become-step-num">2</div>
+        <div class="become-step-label">Add Listing</div>
+      </div>
+      <div class="become-step">
+        <div class="become-step-num">3</div>
+        <div class="become-step-label">Get Verified</div>
+      </div>
+      <div class="become-step">
+        <div class="become-step-num">4</div>
+        <div class="become-step-label">Receive Enquiries</div>
+      </div>
+    </div>
+    <a href="{% url 'signup' %}" class="become-btn">
+      <i class="fa-solid fa-user-plus"></i> Sign Up as Agent — It's Free
+    </a>
+  </div>
+</section>
+
+{% endblock %}

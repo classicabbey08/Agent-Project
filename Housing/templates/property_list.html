@@ -1,93 +1,472 @@
 {% extends 'base.html' %}
+{% block title %}Browse Properties – NaijaNest{% endblock %}
 
-{% block title %}Properties in Lagos - Lagos Premium Homes{% endblock %}
+{% block extra_head %}
+<style>
+  :root {
+    --green: #16a34a; --green-light: #dcfce7; --green-mid: #bbf7d0;
+    --gold: #f59e0b; --gold-light: #fef3c7;
+    --ink: #0d1f12; --mist: #f0f7f2;
+  }
+
+  /* ── Page hero ── */
+  .list-hero {
+    background: var(--ink);
+    padding: 6rem 1.5rem 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .list-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: url('https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1600&q=80');
+    background-size: cover; background-position: center;
+    opacity: 0.15;
+  }
+  .list-hero-content { position: relative; z-index: 1; }
+  .list-hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.75rem);
+    font-weight: 800; color: #fff;
+    letter-spacing: -0.03em; margin-bottom: 0.5rem;
+  }
+  .list-hero p { font-size: 0.95rem; color: rgba(255,255,255,0.6); }
+
+  /* ── Layout ── */
+  .list-body {
+    max-width: 1280px; margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .list-body { grid-template-columns: 1fr; }
+    .filter-sidebar { display: none; }
+    .mobile-filter-btn { display: flex !important; }
+  }
+
+  /* ── Filter sidebar ── */
+  .filter-sidebar {
+    background: #fff; border-radius: 18px;
+    border: 1px solid #e9f0eb;
+    padding: 1.5rem; position: sticky; top: 90px;
+  }
+  .filter-title {
+    font-family: 'Syne', sans-serif; font-weight: 700;
+    font-size: 0.95rem; color: var(--ink); margin-bottom: 1.25rem;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .filter-reset { font-size: 0.72rem; color: var(--green); font-weight: 600; cursor: pointer; text-decoration: none; }
+  .filter-reset:hover { text-decoration: underline; }
+
+  .filter-group { margin-bottom: 1.5rem; }
+  .filter-label {
+    display: block; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.07em; text-transform: uppercase;
+    color: #6b7280; margin-bottom: 0.6rem;
+  }
+  .filter-select, .filter-input {
+    width: 100%; border: 1.5px solid #e5e7eb; border-radius: 9px;
+    padding: 9px 12px; font-size: 0.85rem; color: #111827;
+    background: #fafafa; font-family: 'DM Sans', sans-serif;
+    outline: none; transition: border-color 0.2s;
+    appearance: none;
+  }
+  .filter-select:focus, .filter-input:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.08);
+  }
+
+  /* Checkbox filters */
+  .filter-checks { display: flex; flex-direction: column; gap: 8px; }
+  .filter-check-label {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.82rem; color: #374151; cursor: pointer;
+  }
+  .filter-check-label input { accent-color: var(--green); width: 15px; height: 15px; }
+
+  .filter-apply-btn {
+    width: 100%; background: var(--green); color: #fff;
+    font-weight: 700; font-size: 0.875rem; padding: 11px;
+    border-radius: 10px; border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.2s;
+  }
+  .filter-apply-btn:hover { background: #15803d; }
+
+  /* ── Right side ── */
+  .list-right { }
+
+  /* Toolbar */
+  .list-toolbar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;
+  }
+  .list-count { font-size: 0.875rem; color: #6b7280; }
+  .list-count strong { color: var(--ink); font-weight: 700; }
+
+  .toolbar-right { display: flex; align-items: center; gap: 0.75rem; }
+  .sort-select {
+    border: 1.5px solid #e5e7eb; border-radius: 9px;
+    padding: 7px 12px; font-size: 0.82rem; color: #374151;
+    background: #fff; font-family: 'DM Sans', sans-serif;
+    outline: none; cursor: pointer;
+  }
+  .view-toggle { display: flex; border: 1.5px solid #e5e7eb; border-radius: 9px; overflow: hidden; }
+  .view-btn {
+    padding: 7px 10px; background: #fff; border: none; cursor: pointer;
+    color: #9ca3af; transition: background 0.15s, color 0.15s;
+  }
+  .view-btn.active { background: var(--green); color: #fff; }
+
+  /* Mobile filter button */
+  .mobile-filter-btn {
+    display: none; align-items: center; gap: 6px;
+    background: #fff; border: 1.5px solid #e5e7eb;
+    border-radius: 9px; padding: 7px 14px;
+    font-size: 0.82rem; font-weight: 600; color: #374151;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+  }
+
+  /* ── Property grid ── */
+  .prop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+  }
+  .prop-grid.list-view { grid-template-columns: 1fr; }
+
+  /* Card */
+  .prop-card {
+    background: #fff; border-radius: 18px;
+    border: 1px solid #e9f0eb; overflow: hidden;
+    transition: transform 0.25s, box-shadow 0.25s;
+    position: relative;
+  }
+  .prop-card:hover { transform: translateY(-5px); box-shadow: 0 20px 50px rgba(0,0,0,0.09); }
+
+  .prop-card-img-wrap { overflow: hidden; position: relative; }
+  .prop-card-img {
+    width: 100%; height: 200px; object-fit: cover; display: block;
+    transition: transform 0.5s ease;
+  }
+  .prop-card:hover .prop-card-img { transform: scale(1.04); }
+
+  .prop-badge {
+    position: absolute; top: 12px; left: 12px;
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em;
+    text-transform: uppercase; padding: 4px 10px; border-radius: 100px;
+  }
+  .prop-badge.rent     { background: var(--green); color: #fff; }
+  .prop-badge.shortlet { background: var(--gold); color: #0d1f12; }
+  .prop-badge.sale     { background: #3b82f6; color: #fff; }
+
+  .prop-fav {
+    position: absolute; top: 12px; right: 12px;
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(255,255,255,0.9); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    border: none; cursor: pointer; transition: background 0.2s;
+  }
+  .prop-fav:hover { background: #fff; }
+  .prop-fav.saved svg { fill: #ef4444; stroke: #ef4444; }
+
+  .prop-body { padding: 1.1rem 1.25rem 1.25rem; }
+  .prop-location {
+    font-size: 0.72rem; color: #9ca3af;
+    display: flex; align-items: center; gap: 3px; margin-bottom: 4px;
+  }
+  .prop-title {
+    font-family: 'Syne', sans-serif; font-weight: 700;
+    font-size: 1rem; color: var(--ink); margin-bottom: 8px; line-height: 1.3;
+  }
+  .prop-features {
+    display: flex; gap: 10px; font-size: 0.75rem; color: #6b7280;
+    margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #f3f4f6;
+    flex-wrap: wrap;
+  }
+  .prop-feature { display: flex; align-items: center; gap: 3px; }
+  .prop-footer { display: flex; justify-content: space-between; align-items: center; }
+  .prop-price {
+    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-size: 1.1rem; color: var(--green);
+  }
+  .prop-price span { font-family: 'DM Sans', sans-serif; font-size: 0.7rem; color: #9ca3af; font-weight: 400; }
+  .prop-cta {
+    font-size: 0.78rem; font-weight: 600; color: var(--green);
+    padding: 6px 14px; border-radius: 8px;
+    border: 1.5px solid var(--green-mid);
+    text-decoration: none; transition: all 0.2s;
+  }
+  .prop-cta:hover { background: var(--green); color: #fff; border-color: var(--green); }
+
+  /* List view card */
+  .prop-grid.list-view .prop-card { display: flex; }
+  .prop-grid.list-view .prop-card-img-wrap { width: 220px; flex-shrink: 0; }
+  .prop-grid.list-view .prop-card-img { height: 100%; }
+  .prop-grid.list-view .prop-body { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  @media (max-width: 600px) {
+    .prop-grid.list-view .prop-card { flex-direction: column; }
+    .prop-grid.list-view .prop-card-img-wrap { width: 100%; }
+    .prop-grid.list-view .prop-card-img { height: 200px; }
+  }
+
+  /* ── Empty state ── */
+  .empty-state {
+    grid-column: 1/-1; text-align: center;
+    padding: 4rem 2rem; color: #9ca3af;
+  }
+  .empty-state-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .empty-state h3 { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; color: #374151; margin-bottom: 0.5rem; }
+  .empty-state p { font-size: 0.875rem; }
+
+  /* ── Pagination ── */
+  .pagination {
+    display: flex; justify-content: center; align-items: center;
+    gap: 0.5rem; margin-top: 2.5rem; flex-wrap: wrap;
+  }
+  .page-btn {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.875rem; font-weight: 600;
+    border: 1.5px solid #e5e7eb; background: #fff; color: #374151;
+    cursor: pointer; transition: all 0.15s; text-decoration: none;
+  }
+  .page-btn:hover { border-color: var(--green-mid); color: var(--green); }
+  .page-btn.active { background: var(--green); color: #fff; border-color: var(--green); }
+  .page-btn.disabled { opacity: 0.4; pointer-events: none; }
+
+  /* Fade in */
+  .fade-in { opacity: 0; transform: translateY(10px); animation: fadeIn 0.4s ease forwards; }
+  @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+</style>
+{% endblock %}
 
 {% block content %}
 
-  <section class="py-12 bg-gray-50">
-    <div class="max-w-7xl mx-auto px-6">
+<!-- Hero -->
+<div class="list-hero">
+  <div class="list-hero-content">
+    <h1>Browse Properties in Lagos</h1>
+    <p>{{ properties|length|default:"Hundreds of" }} verified listings — updated daily</p>
+  </div>
+</div>
 
-      <!-- Page Title -->
-      <h1 class="text-4xl md:text-5xl font-bold text-center mb-4 text-gray-900">
-        Properties in Lagos
-      </h1>
-      <p class="text-center text-lg text-gray-600 mb-12 max-w-3xl mx-auto">
-        Browse verified listings with real photos and honest details. Find your next home without wasting transport money.
-      </p>
+<!-- Body -->
+<div class="list-body">
 
-      <!-- Filter Bar -->
-      <div class="bg-white shadow rounded-xl p-6 mb-12 flex flex-wrap gap-4 items-end">
-        <div class="flex-1 min-w-[200px]">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
-          <input type="text" placeholder="Lekki, Ikoyi, VI..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-        </div>
+  <!-- Filter sidebar -->
+  <aside class="filter-sidebar">
+    <div class="filter-title">
+      Filters
+      <a href="{% url 'property_list' %}" class="filter-reset">Reset all</a>
+    </div>
 
-        <div class="w-full sm:w-auto">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
-          <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-            <option>Rent or Sale</option>
-            <option>Rent</option>
-            <option>Sale</option>
-          </select>
-        </div>
-
-        <div class="w-full sm:w-auto">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Min Price (₦)</label>
-          <input type="number" placeholder="0" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-        </div>
-
-        <div class="w-full sm:w-auto">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Max Price (₦)</label>
-          <input type="number" placeholder="Any" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-        </div>
-
-        <button class="bg-indigo-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-indigo-700 transition w-full sm:w-auto">
-          Search Properties
-        </button>
+    <form method="GET">
+      <div class="filter-group">
+        <label class="filter-label">Property Type</label>
+        <select class="filter-select" name="type">
+          <option value="">All Types</option>
+          <option value="apartment">Apartment</option>
+          <option value="duplex">Duplex</option>
+          <option value="bungalow">Bungalow</option>
+          <option value="shortlet">Short Let</option>
+          <option value="land">Land</option>
+        </select>
       </div>
 
-      <!-- Properties Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        <!-- Example Property Card (repeat this block for each property later) -->
-        <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300">
-          <div class="relative">
-            <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800" alt="Lekki Apartment" class="w-full h-56 object-cover">
-            <span class="absolute top-4 left-4 bg-green-600 text-white px-3 py-1 rounded-full text-xs font-medium">
-              For Rent
-            </span>
+      <div class="filter-group">
+        <label class="filter-label">Location</label>
+        <select class="filter-select" name="location">
+          <option value="">All Lagos</option>
+          <option value="lekki">Lekki</option>
+          <option value="ikoyi">Ikoyi</option>
+          <option value="vi">Victoria Island</option>
+          <option value="surulere">Surulere</option>
+          <option value="ikeja">Ikeja</option>
+          <option value="ajah">Ajah</option>
+          <option value="yaba">Yaba</option>
+          <option value="gbagada">Gbagada</option>
+          <option value="magodo">Magodo</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Bedrooms</label>
+        <select class="filter-select" name="bedrooms">
+          <option value="">Any</option>
+          <option value="selfcon">Self-contained</option>
+          <option value="1">1 Bedroom</option>
+          <option value="2">2 Bedrooms</option>
+          <option value="3">3 Bedrooms</option>
+          <option value="4">4+ Bedrooms</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Max Price (₦/year)</label>
+        <select class="filter-select" name="max_price">
+          <option value="">Any Budget</option>
+          <option value="500000">Under 500k</option>
+          <option value="1000000">Under 1M</option>
+          <option value="2000000">Under 2M</option>
+          <option value="5000000">Under 5M</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Amenities</label>
+        <div class="filter-checks">
+          <label class="filter-check-label"><input type="checkbox" name="amenity" value="water"> Running Water</label>
+          <label class="filter-check-label"><input type="checkbox" name="amenity" value="security"> 24hr Security</label>
+          <label class="filter-check-label"><input type="checkbox" name="amenity" value="parking"> Parking Space</label>
+          <label class="filter-check-label"><input type="checkbox" name="amenity" value="generator"> Generator</label>
+          <label class="filter-check-label"><input type="checkbox" name="amenity" value="bq"> BQ Included</label>
+        </div>
+      </div>
+
+      <button type="submit" class="filter-apply-btn">Apply Filters</button>
+    </form>
+  </aside>
+
+  <!-- Right column -->
+  <div class="list-right">
+
+    <!-- Toolbar -->
+    <div class="list-toolbar">
+      <div class="list-count">
+        Showing <strong>{% if properties %}{{ properties|length }}{% else %}0{% endif %}</strong> properties
+      </div>
+      <div class="toolbar-right">
+        <button class="mobile-filter-btn">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+          Filters
+        </button>
+        <select class="sort-select" id="sortSelect">
+          <option>Newest First</option>
+          <option>Price: Low to High</option>
+          <option>Price: High to Low</option>
+          <option>Most Popular</option>
+        </select>
+        <div class="view-toggle">
+          <button class="view-btn active" id="gridBtn" aria-label="Grid view">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </button>
+          <button class="view-btn" id="listBtn" aria-label="List view">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Property grid -->
+    <div class="prop-grid" id="propGrid">
+
+      {% if properties %}
+        {% for property in properties %}
+        <div class="prop-card fade-in">
+          <div class="prop-card-img-wrap">
+            {% if property.image %}
+              <img src="{{ property.image.url }}" alt="{{ property.title }}" class="prop-card-img">
+            {% else %}
+              <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80" alt="{{ property.title }}" class="prop-card-img">
+            {% endif %}
+            <span class="prop-badge rent">For Rent</span>
+            <button class="prop-fav" aria-label="Save property">
+              <svg width="15" height="15" fill="none" stroke="#6b7280" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
           </div>
-          <div class="p-5">
-            <h3 class="text-xl font-semibold text-gray-900 mb-1">
-              Luxury 3-Bedroom Apartment
-            </h3>
-            <p class="text-gray-600 mb-3">
-              Lekki Phase 1 • 3 Beds • 3 Baths • 150 sqm
-            </p>
-            <div class="flex justify-between items-center">
-              <span class="text-2xl font-bold text-indigo-700">₦3,200,000 / year</span>
-              <a href="#" class="text-indigo-600 hover:text-indigo-800 font-medium">
-                View →
-              </a>
+          <div class="prop-body">
+            <div class="prop-location">
+              <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              {{ property.location }}
+            </div>
+            <div class="prop-title">{{ property.title }}</div>
+            <div class="prop-features">
+              <span class="prop-feature">🛏 {{ property.bedrooms }} Bed</span>
+              <span class="prop-feature">🚿 {{ property.bathrooms }} Bath</span>
+            </div>
+            <div class="prop-footer">
+              <div class="prop-price">₦{{ property.price|floatformat:0 }} <span>/yr</span></div>
+              <a href="{% url 'property_detail' property.pk %}" class="prop-cta">View</a>
             </div>
           </div>
         </div>
+        {% endfor %}
 
-        <!-- Duplicate the card block above for 3–6 more cards to fill the grid -->
-        <!-- ... copy-paste more cards here ... -->
-
-      </div>
-
-      <!-- Pagination (simple for now) -->
-      <div class="flex justify-center mt-12 gap-4">
-        <button class="px-6 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
-          Previous
-        </button>
-        <button class="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-          Next
-        </button>
-      </div>
+      {% else %}
+        <!-- Placeholder cards shown when no DB properties yet -->
+        {% for i in "123456" %}
+        <div class="prop-card fade-in">
+          <div class="prop-card-img-wrap">
+            <img src="https://images.unsplash.com/photo-160058515434{% cycle '0-be6161a56a0c' '7687920-4e2a09cf159d' '7687939-d2a09cf165b1' %}?w=600&q=80"
+                 alt="Property" class="prop-card-img"
+                 onerror="this.src='https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80'">
+            <span class="prop-badge {% cycle 'rent' 'shortlet' 'rent' %}">{% cycle 'For Rent' 'Short Let' 'For Rent' %}</span>
+            <button class="prop-fav" aria-label="Save">
+              <svg width="15" height="15" fill="none" stroke="#6b7280" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+          </div>
+          <div class="prop-body">
+            <div class="prop-location">
+              <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              {% cycle 'Lekki Phase 1' 'Victoria Island' 'Surulere' 'Ikeja' 'Ikoyi' 'Ajah' %}
+            </div>
+            <div class="prop-title">{% cycle '3-Bed Apartment' '2-Bed Shortlet' '4-Bed Duplex' '1-Bed Flat' 'Mini Flat' '3-Bed Bungalow' %}</div>
+            <div class="prop-features">
+              <span class="prop-feature">🛏 {% cycle '3' '2' '4' '1' '1' '3' %} Bed</span>
+              <span class="prop-feature">🚿 {% cycle '2' '2' '3' '1' '1' '2' %} Bath</span>
+            </div>
+            <div class="prop-footer">
+              <div class="prop-price">₦{% cycle '3.2M' '85k' '5.5M' '750k' '1.2M' '2.8M' %} <span>/{% cycle 'yr' 'night' 'yr' 'yr' 'yr' 'yr' %}</span></div>
+              <a href="#" class="prop-cta">View</a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      {% endif %}
 
     </div>
-  </section>
 
+    <!-- Pagination -->
+    <div class="pagination">
+      <a href="#" class="page-btn disabled">←</a>
+      <a href="#" class="page-btn active">1</a>
+      <a href="#" class="page-btn">2</a>
+      <a href="#" class="page-btn">3</a>
+      <span style="color:#9ca3af; font-size:0.875rem;">...</span>
+      <a href="#" class="page-btn">8</a>
+      <a href="#" class="page-btn">→</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Grid / List view toggle
+  const propGrid = document.getElementById('propGrid');
+  const gridBtn  = document.getElementById('gridBtn');
+  const listBtn  = document.getElementById('listBtn');
+
+  gridBtn.addEventListener('click', () => {
+    propGrid.classList.remove('list-view');
+    gridBtn.classList.add('active');
+    listBtn.classList.remove('active');
+  });
+  listBtn.addEventListener('click', () => {
+    propGrid.classList.add('list-view');
+    listBtn.classList.add('active');
+    gridBtn.classList.remove('active');
+  });
+
+  // Save / unsave toggle
+  document.querySelectorAll('.prop-fav').forEach(btn => {
+    btn.addEventListener('click', () => btn.classList.toggle('saved'));
+  });
+</script>
 {% endblock %}

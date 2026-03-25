@@ -1,0 +1,380 @@
+{% extends 'base.html' %}
+{% block title %}Agent Dashboard – NaijaNest{% endblock %}
+
+{% block extra_head %}
+<style>
+  :root {
+    --green:#16a34a; --green-light:#dcfce7; --green-mid:#bbf7d0;
+    --gold:#f59e0b;  --gold-light:#fef3c7;
+    --ink:#0d1f12;   --mist:#f0f7f2;
+    --sidebar-w:240px;
+  }
+  .dash-root{display:flex;min-height:100vh;background:#f4f7f5;padding-top:72px;}
+
+  /* ── Sidebar ── */
+  .sidebar{width:var(--sidebar-w);background:var(--ink);display:flex;flex-direction:column;position:fixed;top:72px;bottom:0;left:0;z-index:40;overflow-y:auto;transition:transform 0.3s ease;}
+  .sidebar-top{padding:1.75rem 1.25rem 1rem;border-bottom:1px solid rgba(255,255,255,0.07);}
+  .dash-avatar{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--gold),#f97316);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:#fff;margin-bottom:0.85rem;}
+  .dash-name{font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;color:#fff;}
+  .dash-role{font-size:0.68rem;color:rgba(255,255,255,0.4);margin-top:3px;text-transform:uppercase;letter-spacing:0.07em;}
+  .role-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(245,158,11,0.18);border:1px solid rgba(245,158,11,0.35);color:#fbbf24;font-size:0.65rem;font-weight:700;padding:3px 9px;border-radius:100px;margin-top:6px;letter-spacing:0.05em;}
+  .sidebar-nav{padding:1rem 0.75rem;flex:1;}
+  .nav-group-label{font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.25);padding:0.75rem 0.5rem 0.4rem;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;font-size:0.855rem;font-weight:500;color:rgba(255,255,255,0.6);text-decoration:none;transition:background 0.15s,color 0.15s;margin-bottom:2px;}
+  .nav-item:hover{background:rgba(255,255,255,0.07);color:#fff;}
+  .nav-item.active{background:var(--gold);color:#0d1f12;font-weight:700;}
+  .nav-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.06);flex-shrink:0;transition:background 0.15s;}
+  .nav-item.active .nav-icon{background:rgba(0,0,0,0.15);}
+  .nav-item:hover .nav-icon{background:rgba(255,255,255,0.1);}
+  .nav-badge{margin-left:auto;background:var(--gold);color:#0d1f12;font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:100px;}
+  .nav-item.active .nav-badge{background:#0d1f12;color:var(--gold);}
+  .sidebar-bottom{padding:1rem 0.75rem;border-top:1px solid rgba(255,255,255,0.07);}
+
+  /* ── Main ── */
+  .dash-main{margin-left:var(--sidebar-w);flex:1;padding:2rem 2.5rem 4rem;min-width:0;}
+  .dash-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
+  .dash-greeting{font-family:'Syne',sans-serif;font-size:clamp(1.5rem,3vw,2rem);font-weight:800;color:var(--ink);letter-spacing:-0.03em;}
+  .dash-subtext{font-size:0.875rem;color:#6b7280;margin-top:4px;}
+  .dash-cta-btn{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:#0d1f12;font-weight:700;font-size:0.875rem;padding:11px 22px;border-radius:12px;text-decoration:none;transition:background 0.2s,transform 0.15s;}
+  .dash-cta-btn:hover{background:#d97706;transform:translateY(-1px);}
+
+  /* ── Stats ── */
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:1.25rem;margin-bottom:2rem;}
+  .stat-card{background:#fff;border-radius:18px;padding:1.5rem;border:1px solid #e9f0eb;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;}
+  .stat-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,0.07);}
+  .stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+  .stat-card.green::after{background:linear-gradient(90deg,var(--green),#34d399);}
+  .stat-card.gold::after{background:linear-gradient(90deg,var(--gold),#fbbf24);}
+  .stat-card.blue::after{background:linear-gradient(90deg,#3b82f6,#60a5fa);}
+  .stat-card.rose::after{background:linear-gradient(90deg,#f43f5e,#fb7185);}
+  .stat-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin-bottom:1rem;}
+  .stat-icon.green{background:var(--green-light);}
+  .stat-icon.gold{background:var(--gold-light);}
+  .stat-icon.blue{background:#eff6ff;}
+  .stat-icon.rose{background:#fff1f2;}
+  .stat-num{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--ink);line-height:1;margin-bottom:4px;}
+  .stat-label{font-size:0.78rem;color:#6b7280;}
+  .stat-delta{position:absolute;top:1.25rem;right:1.25rem;font-size:0.7rem;font-weight:600;padding:3px 8px;border-radius:100px;}
+  .stat-delta.up{background:#dcfce7;color:#166534;}
+  .stat-delta.flat{background:#f3f4f6;color:#6b7280;}
+
+  /* ── Content grid ── */
+  .content-grid{display:grid;grid-template-columns:1fr 320px;gap:1.5rem;}
+  @media(max-width:1100px){.content-grid{grid-template-columns:1fr;}}
+
+  /* ── Section cards ── */
+  .section-card{background:#fff;border-radius:18px;border:1px solid #e9f0eb;overflow:hidden;margin-bottom:1.5rem;}
+  .section-card-head{padding:1.25rem 1.5rem;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between;align-items:center;}
+  .section-card-title{font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:700;color:var(--ink);}
+  .section-card-link{font-size:0.78rem;color:var(--green);font-weight:600;text-decoration:none;}
+  .section-card-link:hover{text-decoration:underline;}
+
+  /* ── Listing rows ── */
+  .listing-row{display:flex;align-items:center;gap:1rem;padding:1rem 1.5rem;border-bottom:1px solid #f9fafb;transition:background 0.15s;}
+  .listing-row:last-child{border-bottom:none;}
+  .listing-row:hover{background:#fafafa;}
+  .listing-img{width:64px;height:64px;border-radius:12px;object-fit:cover;flex-shrink:0;}
+  .listing-info{flex:1;min-width:0;}
+  .listing-name{font-weight:600;font-size:0.875rem;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .listing-meta{font-size:0.72rem;color:#9ca3af;margin-top:2px;display:flex;align-items:center;gap:4px;}
+  .listing-stats{display:flex;gap:12px;margin-top:5px;}
+  .listing-stat{display:flex;align-items:center;gap:3px;font-size:0.7rem;color:#6b7280;}
+  .listing-actions{display:flex;gap:6px;flex-shrink:0;}
+  .btn-sm{font-size:0.72rem;font-weight:600;padding:5px 12px;border-radius:8px;border:none;cursor:pointer;transition:all 0.15s;text-decoration:none;display:inline-flex;align-items:center;gap:4px;}
+  .btn-edit{background:#f3f4f6;color:#374151;}
+  .btn-edit:hover{background:#e5e7eb;}
+  .btn-pause{background:#fef3c7;color:#92400e;}
+  .btn-pause:hover{background:#fde68a;}
+
+  .prop-status{font-size:0.68rem;font-weight:700;padding:3px 9px;border-radius:100px;white-space:nowrap;}
+  .prop-status.active{background:#dcfce7;color:#166534;}
+  .prop-status.pending{background:#fef3c7;color:#92400e;}
+  .prop-status.inactive{background:#f3f4f6;color:#6b7280;}
+
+  /* ── Enquiry rows ── */
+  .enquiry-row{display:flex;gap:0.875rem;padding:1rem 1.5rem;border-bottom:1px solid #f9fafb;transition:background 0.15s;}
+  .enquiry-row:last-child{border-bottom:none;}
+  .enquiry-row:hover{background:#fafafa;}
+  .enq-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#dcfce7,#bbf7d0);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;color:var(--green);flex-shrink:0;}
+  .enq-body{flex:1;min-width:0;}
+  .enq-name{font-weight:600;font-size:0.82rem;color:var(--ink);}
+  .enq-prop{font-size:0.72rem;color:#9ca3af;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .enq-msg{font-size:0.78rem;color:#4b5563;margin-top:4px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .enq-time{font-size:0.68rem;color:#9ca3af;white-space:nowrap;margin-top:1px;}
+  .enq-unread{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:6px;}
+
+  /* ── Performance chart bars ── */
+  .perf-row{display:flex;align-items:center;gap:0.875rem;padding:0.875rem 1.5rem;border-bottom:1px solid #f9fafb;}
+  .perf-row:last-child{border-bottom:none;}
+  .perf-name{font-size:0.78rem;font-weight:600;color:var(--ink);width:140px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .perf-bar-wrap{flex:1;background:#f3f4f6;border-radius:100px;height:8px;overflow:hidden;}
+  .perf-bar{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--green),#34d399);transition:width 1s ease;}
+  .perf-count{font-size:0.75rem;font-weight:700;color:var(--ink);width:36px;text-align:right;flex-shrink:0;}
+
+  /* ── Quick actions ── */
+  .quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1.5rem;}
+  .quick-btn{display:flex;flex-direction:column;align-items:center;gap:8px;padding:1.1rem 0.75rem;background:#fff;border-radius:14px;border:1.5px solid #e9f0eb;font-size:0.78rem;font-weight:600;color:var(--ink);text-decoration:none;transition:border-color 0.2s,background 0.2s,transform 0.15s;text-align:center;}
+  .quick-btn:hover{border-color:var(--green-mid);background:var(--mist);transform:translateY(-2px);}
+  .quick-btn-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;background:var(--gold-light);}
+
+  /* ── Tips card ── */
+  .tip-card{background:linear-gradient(135deg,#0d1f12,#14532d);border-radius:18px;padding:1.5rem;color:#fff;margin-bottom:1.5rem;position:relative;overflow:hidden;}
+  .tip-card::before{content:'';position:absolute;right:-30px;top:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.04);}
+  .tip-title{font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;margin-bottom:0.75rem;}
+  .tip-item{display:flex;align-items:flex-start;gap:8px;font-size:0.78rem;color:rgba(255,255,255,0.72);line-height:1.5;margin-bottom:0.5rem;}
+  .tip-dot{width:6px;height:6px;border-radius:50%;background:#4ade80;flex-shrink:0;margin-top:6px;}
+
+  /* ── Empty state ── */
+  .empty-state{padding:3rem 2rem;text-align:center;color:#9ca3af;}
+  .empty-state-icon{font-size:2.5rem;margin-bottom:0.75rem;}
+  .empty-state p{font-size:0.875rem;}
+  .empty-state a{display:inline-block;margin-top:1rem;font-size:0.82rem;font-weight:600;color:var(--green);text-decoration:none;padding:8px 18px;border:1.5px solid var(--green-mid);border-radius:8px;transition:background 0.2s;}
+  .empty-state a:hover{background:var(--green-light);}
+
+  /* ── Mobile ── */
+  .sidebar-toggle{display:none;position:fixed;bottom:1.5rem;right:1.5rem;z-index:50;width:50px;height:50px;background:var(--gold);color:#0d1f12;border:none;border-radius:50%;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 20px rgba(245,158,11,0.4);}
+  @media(max-width:768px){.sidebar{transform:translateX(-100%);}.sidebar.open{transform:translateX(0);}.dash-main{margin-left:0;padding:1.25rem 1rem 5rem;}.sidebar-toggle{display:flex;}}
+
+  .fade-in{opacity:0;transform:translateY(12px);animation:fadeIn 0.5s ease forwards;}
+  .fade-in.d1{animation-delay:0.05s}.fade-in.d2{animation-delay:0.12s}.fade-in.d3{animation-delay:0.19s}.fade-in.d4{animation-delay:0.26s}
+  @keyframes fadeIn{to{opacity:1;transform:translateY(0)}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-root">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div class="dash-avatar">{{ user.username|first|upper }}</div>
+      <div class="dash-name">{{ user.username }}</div>
+      <div class="dash-role">Agent Account</div>
+      <div class="role-chip">🏠 Agent / Landlord</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-group-label">Menu</div>
+      <a href="{% url 'dashboard' %}" class="nav-item active">
+        <span class="nav-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+        Overview
+      </a>
+      <a href="#" class="nav-item">
+        <span class="nav-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+        My Listings
+      </a>
+      <a href="{% url 'property_create' %}" class="nav-item">
+        <span class="nav-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>
+        Add Listing
+      </a>
+      <a href="#" class="nav-item">
+        <span class="nav-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
+        Enquiries
+        <span class="nav-badge">4</span>
+      </a>
+      <a href="#" class="nav-item">
+        <span class="nav-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+        Performance
+      </a>
+      <div class="nav-group-label" style="margin-top:0.75rem">Account</div>
+      <a href="#" class="nav-item">
+        <span class="nav-icon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></span>
+        Profile
+      </a>
+    </nav>
+    <div class="sidebar-bottom">
+      <a href="{% url 'logout' %}" class="nav-item" style="color:#f87171;">
+        <span class="nav-icon" style="background:rgba(239,68,68,0.12)"><svg width="16" height="16" fill="none" stroke="#f87171" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
+        Log Out
+      </a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="dash-main">
+
+    <div class="dash-header fade-in d1">
+      <div>
+        <div class="dash-greeting">Agent Hub, {{ user.username }} 🏠</div>
+        <div class="dash-subtext">Manage your listings and track enquiries.</div>
+      </div>
+      <a href="{% url 'property_create' %}" class="dash-cta-btn">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add New Listing
+      </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid fade-in d2">
+      <div class="stat-card green">
+        <span class="stat-delta flat">—</span>
+        <div class="stat-icon green">🏠</div>
+        <div class="stat-num">0</div>
+        <div class="stat-label">Active Listings</div>
+      </div>
+      <div class="stat-card gold">
+        <span class="stat-delta up">↑ 4 new</span>
+        <div class="stat-icon gold">📩</div>
+        <div class="stat-num">4</div>
+        <div class="stat-label">New Enquiries</div>
+      </div>
+      <div class="stat-card blue">
+        <span class="stat-delta up">↑ This week</span>
+        <div class="stat-icon blue">👁️</div>
+        <div class="stat-num">0</div>
+        <div class="stat-label">Total Views</div>
+      </div>
+      <div class="stat-card rose">
+        <span class="stat-delta flat">—</span>
+        <div class="stat-icon rose">⏳</div>
+        <div class="stat-num">0</div>
+        <div class="stat-label">Pending Review</div>
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <!-- LEFT -->
+      <div>
+
+        <!-- My Listings -->
+        <div class="section-card fade-in d3">
+          <div class="section-card-head">
+            <span class="section-card-title">My Listings</span>
+            <a href="{% url 'property_create' %}" class="section-card-link">+ Add New</a>
+          </div>
+          <div class="empty-state">
+            <div class="empty-state-icon">🏗️</div>
+            <p>No listings yet. Add your first property<br>and start receiving enquiries today.</p>
+            <a href="{% url 'property_create' %}">Add Your First Listing</a>
+          </div>
+          <!--
+          ── Wire up when DB is ready ──
+          {% for p in agent_listings %}
+          <div class="listing-row">
+            <img src="{{ p.image.url }}" class="listing-img" alt="{{ p.title }}">
+            <div class="listing-info">
+              <div class="listing-name">{{ p.title }}</div>
+              <div class="listing-meta"><svg ...></svg> {{ p.location }}</div>
+              <div class="listing-stats">
+                <span class="listing-stat">👁️ {{ p.views }} views</span>
+                <span class="listing-stat">📩 {{ p.enquiry_count }} enquiries</span>
+              </div>
+            </div>
+            <span class="prop-status active">Active</span>
+            <div class="listing-actions">
+              <a href="#" class="btn-sm btn-edit">✏️ Edit</a>
+              <button class="btn-sm btn-pause">⏸ Pause</button>
+            </div>
+          </div>
+          {% endfor %}
+          -->
+        </div>
+
+        <!-- Enquiries -->
+        <div class="section-card fade-in d4">
+          <div class="section-card-head">
+            <span class="section-card-title">Recent Enquiries</span>
+            <a href="#" class="section-card-link">View all</a>
+          </div>
+
+          <div class="enquiry-row">
+            <div class="enq-unread"></div>
+            <div class="enq-avatar">C</div>
+            <div class="enq-body">
+              <div class="enq-name">Chidi Okonkwo</div>
+              <div class="enq-prop">Re: 3-Bed Apartment, Lekki Phase 1</div>
+              <div class="enq-msg">Good afternoon, I'm interested in the apartment. Is it still available? Can we arrange a viewing this weekend?</div>
+            </div>
+            <div class="enq-time">2h ago</div>
+          </div>
+          <div class="enquiry-row">
+            <div class="enq-unread"></div>
+            <div class="enq-avatar">A</div>
+            <div class="enq-body">
+              <div class="enq-name">Amaka Eze</div>
+              <div class="enq-prop">Re: 2-Bed Shortlet, Victoria Island</div>
+              <div class="enq-msg">Hi, I need the shortlet for 3 nights next week. What's your best price for weekdays?</div>
+            </div>
+            <div class="enq-time">5h ago</div>
+          </div>
+          <div class="enquiry-row">
+            <div class="enq-avatar">T</div>
+            <div class="enq-body">
+              <div class="enq-name">Tunde Adeyemi</div>
+              <div class="enq-prop">Re: 4-Bed Duplex, Surulere</div>
+              <div class="enq-msg">Does the property have a BQ and 24hr security? Also is the price negotiable?</div>
+            </div>
+            <div class="enq-time">Yesterday</div>
+          </div>
+          <div class="enquiry-row">
+            <div class="enq-avatar">F</div>
+            <div class="enq-body">
+              <div class="enq-name">Fatima Bello</div>
+              <div class="enq-prop">Re: 3-Bed Apartment, Lekki Phase 1</div>
+              <div class="enq-msg">Please can you confirm if water and light are available? I have a family of 4.</div>
+            </div>
+            <div class="enq-time">Yesterday</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT -->
+      <div>
+
+        <!-- Quick actions -->
+        <div class="quick-actions fade-in d2">
+          <a href="{% url 'property_create' %}" class="quick-btn"><span class="quick-btn-icon">➕</span>Add Listing</a>
+          <a href="#" class="quick-btn"><span class="quick-btn-icon">📩</span>Enquiries</a>
+          <a href="#" class="quick-btn"><span class="quick-btn-icon">📊</span>Analytics</a>
+          <a href="#" class="quick-btn"><span class="quick-btn-icon">⚙️</span>Settings</a>
+        </div>
+
+        <!-- Listing performance -->
+        <div class="section-card fade-in d3">
+          <div class="section-card-head">
+            <span class="section-card-title">Listing Performance</span>
+            <a href="#" class="section-card-link">Full report</a>
+          </div>
+          <div class="empty-state" style="padding:2rem;">
+            <div class="empty-state-icon">📊</div>
+            <p style="font-size:0.82rem;">Performance data will appear<br>once you have active listings.</p>
+          </div>
+          <!--
+          ── Wire up when DB is ready ──
+          <div class="perf-row">
+            <div class="perf-name">3-Bed, Lekki</div>
+            <div class="perf-bar-wrap"><div class="perf-bar" style="width:80%"></div></div>
+            <div class="perf-count">48</div>
+          </div>
+          -->
+        </div>
+
+        <!-- Agent tips -->
+        <div class="tip-card fade-in d4">
+          <div class="tip-title">💡 Tips to Get More Enquiries</div>
+          <div class="tip-item"><span class="tip-dot"></span>Add at least 6 real photos — listings with more photos get 3× more views.</div>
+          <div class="tip-item"><span class="tip-dot"></span>Mention key details: water supply, gen/NEPA, security, parking.</div>
+          <div class="tip-item"><span class="tip-dot"></span>Respond to enquiries within 2 hours to close deals faster.</div>
+          <div class="tip-item"><span class="tip-dot"></span>Keep your price competitive — check similar listings in your area.</div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const sidebar = document.getElementById('sidebar');
+  document.getElementById('sidebarToggle').addEventListener('click', () => sidebar.classList.toggle('open'));
+  document.addEventListener('click', e => {
+    if (window.innerWidth <= 768 && !sidebar.contains(e.target) && !document.getElementById('sidebarToggle').contains(e.target))
+      sidebar.classList.remove('open');
+  });
+</script>
+{% endblock %}

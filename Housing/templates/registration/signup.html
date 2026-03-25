@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+{% block title %}Create Account – NaijaNest{% endblock %}
+
+{% block extra_head %}
+<style>
+  :root {
+    --green: #16a34a; --green-light: #dcfce7; --green-mid: #bbf7d0;
+    --ink: #0d1f12; --mist: #f0f7f2; --gold: #f59e0b;
+  }
+
+  .auth-wrap {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding-top: 72px;
+  }
+  @media (max-width: 768px) {
+    .auth-wrap { grid-template-columns: 1fr; }
+    .auth-panel { display: none; }
+  }
+
+  .auth-panel { position: relative; overflow: hidden; background: var(--ink); }
+  .auth-panel-bg {
+    position: absolute; inset: 0;
+    background-image: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=85');
+    background-size: cover; background-position: center; opacity: 0.35;
+  }
+  .auth-panel-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(160deg, rgba(10,22,40,0.75) 0%, rgba(10,50,20,0.92) 100%);
+    display: flex; flex-direction: column; justify-content: flex-end; padding: 3rem;
+  }
+  .auth-panel-quote {
+    font-family: 'Arial Black', Impact, sans-serif; font-size: 1.9rem; font-weight: 900;
+    color: #fff; line-height: 1.2; margin-bottom: 1rem;
+  }
+  .auth-panel-sub { font-size: 0.875rem; color: rgba(255,255,255,0.6); line-height: 1.6; margin-bottom: 1.5rem; }
+  .auth-panel-badges { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+  .auth-badge {
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.85); font-size: 0.72rem; font-weight: 600;
+    padding: 5px 12px; border-radius: 100px; display: flex; align-items: center; gap: 5px;
+  }
+
+  .auth-form-wrap {
+    display: flex; align-items: center; justify-content: center;
+    padding: 3rem 2rem; background: #fff; overflow-y: auto;
+  }
+  .auth-form-inner { width: 100%; max-width: 420px; }
+
+  .auth-logo {
+    font-family: 'Arial Black', Impact, sans-serif; font-weight: 900; font-size: 1.4rem;
+    color: var(--green); margin-bottom: 2rem; display: inline-block; text-decoration: none;
+  }
+  .auth-title {
+    font-family: 'Arial Black', Impact, sans-serif; font-size: 1.75rem; font-weight: 900;
+    color: var(--ink); margin-bottom: 0.4rem;
+  }
+  .auth-sub { font-size: 0.875rem; color: #6b7280; margin-bottom: 1.75rem; }
+
+  /* ── Role cards ── */
+  .role-heading {
+    font-size: 0.78rem; font-weight: 700; color: #374151; margin-bottom: 0.75rem;
+  }
+
+  /* Django RadioSelect renders a <ul> with <li> items */
+  .role-field ul {
+    list-style: none; padding: 0; margin: 0;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .role-field ul li { margin: 0; position: relative; }
+
+  /* Hide the actual radio input */
+  .role-field ul li input[type="radio"] {
+    position: absolute; opacity: 0; width: 100%; height: 100%;
+    cursor: pointer; z-index: 1; margin: 0;
+  }
+
+  /* Style the label as a card */
+  .role-field ul li label {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 8px; padding: 1.25rem 0.75rem;
+    border: 2px solid #e5e7eb; border-radius: 14px; cursor: pointer;
+    transition: border-color 0.2s, background 0.2s; text-align: center;
+    background: #fafafa; font-size: 0.85rem; font-weight: 600; color: var(--ink);
+    user-select: none;
+  }
+  .role-field ul li label:hover { border-color: var(--green-mid); background: var(--mist); }
+
+  /* Checked state */
+  .role-field ul li input[type="radio"]:checked ~ label {
+    border-color: var(--green); background: var(--green-light); color: var(--green);
+  }
+
+  /* Icon per card */
+  .role-field ul li:first-child label::before {
+    content: '\f002';
+    font-family: 'Font Awesome 6 Free'; font-weight: 900;
+    font-size: 1.5rem; color: var(--green); display: block;
+  }
+  .role-field ul li:last-child label::before {
+    content: '\f015';
+    font-family: 'Font Awesome 6 Free'; font-weight: 900;
+    font-size: 1.5rem; color: var(--gold); display: block;
+  }
+
+  /* Fields */
+  .field-group { margin-bottom: 1.1rem; }
+  .field-label {
+    display: block; font-size: 0.78rem; font-weight: 700;
+    color: #374151; margin-bottom: 5px;
+  }
+  .field-input {
+    width: 100%; border: 1.5px solid #e5e7eb; border-radius: 10px;
+    padding: 11px 14px; font-size: 0.9rem; color: #111827;
+    background: #fafafa; font-family: 'Arial', sans-serif;
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .field-input:focus {
+    border-color: var(--green); box-shadow: 0 0 0 3px rgba(22,163,74,0.1); background: #fff;
+  }
+  .field-hint { font-size: 0.7rem; color: #9ca3af; margin-top: 4px; }
+
+  .field-input-wrap { position: relative; }
+  .pwd-toggle {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer; color: #9ca3af; padding: 4px;
+  }
+  .pwd-toggle:hover { color: #374151; }
+
+  .submit-btn {
+    width: 100%; background: var(--green); color: #fff;
+    font-weight: 700; font-size: 0.95rem; padding: 13px;
+    border-radius: 12px; border: none; cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    font-family: 'Arial', sans-serif; margin-top: 0.25rem;
+  }
+  .submit-btn:hover { background: #15803d; transform: translateY(-1px); }
+
+  .auth-footer {
+    text-align: center; font-size: 0.82rem; color: #6b7280; margin-top: 1.25rem;
+  }
+  .auth-footer a { color: var(--green); font-weight: 600; text-decoration: none; }
+  .auth-footer a:hover { text-decoration: underline; }
+
+  .form-errors {
+    background: #fff1f2; border: 1px solid #fecdd3; border-radius: 10px;
+    padding: 0.875rem 1rem; margin-bottom: 1.25rem; font-size: 0.82rem; color: #9f1239;
+  }
+  .form-errors ul { margin: 0; padding-left: 1rem; }
+  .form-errors li { margin-bottom: 3px; }
+
+  .fade-in { animation: fadeIn 0.5s ease forwards; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+
+  <!-- Left panel -->
+  <div class="auth-panel">
+    <div class="auth-panel-bg"></div>
+    <div class="auth-panel-overlay">
+      <div class="auth-panel-quote">Find your home in Lagos without the stress.</div>
+      <div class="auth-panel-sub">Real listings, verified landlords, zero middlemen.</div>
+      <div class="auth-panel-badges">
+        <span class="auth-badge"><i class="fa-solid fa-circle-check"></i> Verified listings</span>
+        <span class="auth-badge"><i class="fa-solid fa-camera"></i> Real photos</span>
+        <span class="auth-badge"><i class="fa-solid fa-comment"></i> Direct chat</span>
+        <span class="auth-badge"><i class="fa-solid fa-ban"></i> No agent fees</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right form -->
+  <div class="auth-form-wrap">
+    <div class="auth-form-inner fade-in">
+
+      <a href="{% url 'home' %}" class="auth-logo">NaijaNest.</a>
+      <h1 class="auth-title">Create your account</h1>
+      <p class="auth-sub">Join free — takes less than a minute.</p>
+
+      <!-- Errors -->
+      {% if form.errors %}
+      <div class="form-errors">
+        <ul>
+          {% for field in form %}
+            {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
+          {% endfor %}
+          {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <form method="POST">
+        {% csrf_token %}
+
+        <!-- Role — Django renders this directly, no hidden field tricks -->
+        <div class="field-group">
+          <div class="role-heading">I am joining as:</div>
+          <div class="role-field">{{ form.role }}</div>
+        </div>
+
+        <!-- Username -->
+        <div class="field-group">
+          <label class="field-label" for="id_username">Username</label>
+          <input class="field-input" type="text"
+                 name="username" id="id_username"
+                 value="{{ form.username.value|default:'' }}"
+                 placeholder="e.g. chidi_lagos"
+                 autocomplete="username" required>
+        </div>
+
+        <!-- Password -->
+        <div class="field-group">
+          <label class="field-label" for="id_password1">Password</label>
+          <div class="field-input-wrap">
+            <input class="field-input" type="password"
+                   name="password1" id="id_password1"
+                   placeholder="Min. 8 characters"
+                   autocomplete="new-password"
+                   style="padding-right:42px" required>
+            <button type="button" class="pwd-toggle" onclick="togglePwd('id_password1', this)">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+          <div class="field-hint">Must be 8+ characters and not too common.</div>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="field-group">
+          <label class="field-label" for="id_password2">Confirm Password</label>
+          <div class="field-input-wrap">
+            <input class="field-input" type="password"
+                   name="password2" id="id_password2"
+                   placeholder="Repeat your password"
+                   autocomplete="new-password"
+                   style="padding-right:42px" required>
+            <button type="button" class="pwd-toggle" onclick="togglePwd('id_password2', this)">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn">
+          <i class="fa-solid fa-user-plus" style="margin-right:6px"></i> Create Account
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        Already have an account? <a href="{% url 'login' %}">Log in</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function togglePwd(id, btn) {
+    const input = document.getElementById(id);
+    const icon  = btn.querySelector('i');
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.className = 'fa-solid fa-eye-slash';
+    } else {
+      input.type = 'password';
+      icon.className = 'fa-solid fa-eye';
+    }
+  }
+</script>
+{% endblock %}

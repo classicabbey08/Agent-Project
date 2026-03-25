@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}My Dashboard - NaijaNest{% endblock %}
+
+{% block content %}
+  <div class="max-w-7xl mx-auto px-6 py-12">
+    <h1 class="text-4xl font-bold mb-8">Welcome back, {{ username }}</h1>
+
+    <div class="grid md:grid-cols-2 gap-8">
+      <div class="bg-white p-8 rounded-xl shadow-lg">
+        <h2 class="text-2xl font-semibold mb-6">Saved Properties</h2>
+        <p class="text-gray-600">You haven't saved any homes yet.</p>
+        <a href="{% url 'property_list' %}" class="mt-4 text-indigo-600 hover:underline">
+          Start browsing →
+        </a>
+      </div>
+
+      <div class="bg-white p-8 rounded-xl shadow-lg">
+        <h2 class="text-2xl font-semibold mb-6">My Inquiries</h2>
+        <p class="text-gray-600">No messages yet.</p>
+      </div>
+    </div>
+  </div>
+{% endblock %}

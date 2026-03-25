@@ -3,86 +3,459 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}NaijaNest – Find Your Home Without Stress{% endblock %}</title>
+  <title>{% block title %}NaijaNest – Find Your Home in Lagos{% endblock %}</title>
 
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Inter Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <!-- Custom Styles -->
+  <!-- No Google Fonts needed — using system fonts only -->
+
   <style>
-    body { font-family: 'Inter', system-ui, sans-serif; }
-    .glass {
-      backdrop-filter: blur(12px);
-      background: rgba(255, 255, 255, 0.07);
-      border: 1px solid rgba(255, 255, 255, 0.15);
+    /* ── CSS Variables ── */
+    :root {
+      --brand-green:   #16a34a;
+      --brand-emerald: #059669;
+      --brand-dark:    #0a1628;
+      --brand-gold:    #f59e0b;
+      --nav-height:    72px;
     }
-    .hover-lift:hover { transform: translateY(-3px); }
-    .transition-fast { transition: all 0.25s ease-in-out; }
-    .brand-gradient {
-      background: linear-gradient(90deg, #6366f1, #8b5cf6);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+
+    /* ── Base ── */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: 'Arial', 'Helvetica Neue', Helvetica, sans-serif;
+      background: #f8faf8;
+      color: #1a2332;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
+
+    /* ── Display font (headings only) ── */
+    .font-display { font-family: 'Arial Black', 'Impact', Arial, sans-serif; }
+
+    /* ── Navbar ── */
+    #navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      height: var(--nav-height);
+      transition: background 0.35s ease, box-shadow 0.35s ease, backdrop-filter 0.35s ease;
+    }
+
+    #navbar.transparent { background: transparent; color: #fff; }
+    #navbar.scrolled {
+      background: rgba(255, 255, 255, 0.97);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.08), 0 4px 24px rgba(0,0,0,0.06);
+      color: #1a2332;
+    }
+
+    #navbar.transparent .nav-link { color: rgba(255,255,255,0.9); }
+    #navbar.transparent .nav-link:hover { color: #fff; }
+    #navbar.scrolled .nav-link { color: #374151; }
+    #navbar.scrolled .nav-link:hover { color: var(--brand-green); }
+
+    #navbar.transparent .logo-text { color: #fff; }
+    #navbar.scrolled .logo-text { color: var(--brand-dark); }
+
+    .logo-dot {
+      width: 8px; height: 8px;
+      background: var(--brand-gold);
+      border-radius: 50%;
+      display: inline-block;
+      margin-bottom: 10px;
+      margin-left: 2px;
+    }
+
+    #navbar.transparent .nav-cta {
+      border: 1.5px solid rgba(255,255,255,0.7);
+      color: #fff;
+      background: rgba(255,255,255,0.1);
+    }
+    #navbar.transparent .nav-cta:hover { background: #fff; color: var(--brand-dark); border-color: #fff; }
+    #navbar.scrolled .nav-cta { background: var(--brand-green); color: #fff; border: none; }
+    #navbar.scrolled .nav-cta:hover { background: var(--brand-emerald); }
+
+    #navbar.transparent .nav-login { color: rgba(255,255,255,0.85); }
+    #navbar.transparent .nav-login:hover { color: #fff; }
+    #navbar.scrolled .nav-login { color: var(--brand-green); }
+    #navbar.scrolled .nav-login:hover { color: var(--brand-emerald); }
+
+    .nav-link { position: relative; padding-bottom: 2px; }
+    .nav-link::after {
+      content: ''; position: absolute;
+      bottom: -2px; left: 0; width: 0; height: 1.5px;
+      background: currentColor; transition: width 0.25s ease; border-radius: 2px;
+    }
+    .nav-link:hover::after { width: 100%; }
+    .nav-link.active::after { width: 100%; }
+
+    /* ── Mobile menu ── */
+    #mobile-menu {
+      display: none; position: fixed; inset: 0; z-index: 99;
+      background: var(--brand-dark); padding-top: var(--nav-height);
+      flex-direction: column; align-items: center; justify-content: center; gap: 2rem;
+    }
+    #mobile-menu.open { display: flex; }
+    #mobile-menu a {
+      font-family: 'Arial Black', 'Impact', Arial, sans-serif; font-size: 2rem; font-weight: 700;
+      color: #fff; letter-spacing: -0.02em; transition: color 0.2s; text-decoration: none;
+    }
+    #mobile-menu a:hover { color: var(--brand-gold); }
+
+    .hamburger { display: flex; flex-direction: column; gap: 5px; cursor: pointer; }
+    .hamburger span {
+      display: block; width: 22px; height: 2px;
+      background: currentColor; border-radius: 2px; transition: all 0.3s ease;
+    }
+    .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* ── Flash messages ── */
+    .flash-bar {
+      position: fixed; top: var(--nav-height); left: 50%; transform: translateX(-50%);
+      z-index: 200; width: 100%; max-width: 560px; padding: 0 1rem; pointer-events: none;
+    }
+    .flash-msg {
+      margin-top: 12px; padding: 14px 18px; border-radius: 12px;
+      font-size: 0.875rem; font-weight: 500;
+      display: flex; align-items: center; gap: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      animation: slideDown 0.3s ease forwards;
+      pointer-events: all; cursor: pointer;
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .flash-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+    .flash-error   { background: #fff1f2; color: #9f1239; border: 1px solid #fecdd3; }
+    .flash-info    { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+    .flash-warning { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+
+    /* ── User badge ── */
+    .user-badge { display: flex; align-items: center; gap: 8px; font-size: 0.875rem; font-weight: 500; }
+    .user-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 700; font-family: 'Arial Black', 'Impact', Arial, sans-serif;
+    }
+    #navbar.transparent .user-avatar {
+      background: rgba(255,255,255,0.2); color: #fff; border: 1.5px solid rgba(255,255,255,0.4);
+    }
+    #navbar.scrolled .user-avatar {
+      background: #dcfce7; color: var(--brand-green); border: 1.5px solid #bbf7d0;
+    }
+
+    /* ── Dropdown ── */
+    .dropdown-wrapper { position: relative; }
+    .dropdown-menu {
+      position: absolute; top: calc(100% + 12px); right: 0;
+      background: #fff; border-radius: 14px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
+      border: 1px solid rgba(0,0,0,0.06); min-width: 210px;
+      overflow: hidden; display: none; animation: fadeUp 0.2s ease;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .dropdown-wrapper:hover .dropdown-menu,
+    .dropdown-wrapper:focus-within .dropdown-menu { display: block; }
+
+    .dropdown-menu a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 16px; font-size: 0.875rem; color: #374151;
+      transition: background 0.15s; border-bottom: 1px solid #f3f4f6;
+      text-decoration: none;
+    }
+    .dropdown-menu a:last-child { border-bottom: none; }
+    .dropdown-menu a:hover { background: #f9fafb; color: var(--brand-green); }
+    .dropdown-menu a.danger:hover { background: #fff1f2; color: #dc2626; }
+    .dropdown-menu a i { width: 16px; text-align: center; font-size: 0.85rem; color: #9ca3af; }
+    .dropdown-menu a:hover i { color: inherit; }
+
+    /* ── Footer ── */
+    footer { background: var(--brand-dark); color: #94a3b8; }
+    .footer-brand { font-family: 'Arial Black', 'Impact', Arial, sans-serif; }
+    .footer-link { color: #94a3b8; font-size: 0.875rem; transition: color 0.2s; text-decoration: none; }
+    .footer-link:hover { color: #fff; }
+
+    .content-pad { padding-top: var(--nav-height); }
   </style>
 
   {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col">
-  <!-- Navbar -->
-  <nav class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-md sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+
+<body>
+
+  <!-- ════════════════════════════════════════
+       NAVBAR
+  ════════════════════════════════════════ -->
+  <nav id="navbar" class="transparent">
+    <div class="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
+
       <!-- Logo -->
-      <a href="{% url 'home' %}" class="flex items-center gap-3">
-        <span class="text-3xl font-bold brand-gradient">NN</span>
-        <span class="text-2xl font-bold text-gray-900 dark:text-white">NaijaNest</span>
+      <a href="{% url 'home' %}" class="logo-text flex items-center gap-1 font-display font-bold text-xl tracking-tight">
+        NaijaNest<span class="logo-dot"></span>
       </a>
 
-      <!-- Navigation -->
-      <div class="flex items-center gap-8">
-        <a href="{% url 'property_list' %}" class="text-gray-700 dark:text-gray-300 hover:text-indigo-600 transition-fast font-medium">
-          Browse Properties
-        </a>
+      <!-- Desktop links -->
+      <div class="hidden md:flex items-center gap-7 text-sm font-medium">
+        <a href="{% url 'home' %}"          class="nav-link">Home</a>
+        <a href="{% url 'property_list' %}" class="nav-link">Properties</a>
+        <a href="#"                          class="nav-link">Agents</a>
+        <a href="#"                          class="nav-link">About</a>
+        <a href="#"                          class="nav-link">Contact</a>
+      </div>
 
+      <!-- Right side -->
+      <div class="hidden md:flex items-center gap-4">
         {% if user.is_authenticated %}
-          <div class="flex items-center gap-6">
-            <span class="text-gray-800 dark:text-gray-200 font-medium">
-              {{ user.username }}
-            </span>
-            <a href="{% url 'logout' %}" class="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
-              Logout
-            </a>
+
+          <!-- User dropdown -->
+          <div class="dropdown-wrapper">
+            <button class="user-badge focus:outline-none cursor-pointer">
+              <div class="user-avatar">{{ user.username|first|upper }}</div>
+              <span class="hidden lg:block">{{ user.username }}</span>
+              <i class="fa-solid fa-chevron-down text-xs opacity-60"></i>
+            </button>
+            <div class="dropdown-menu">
+              <a href="{% url 'dashboard' %}">
+                <i class="fa-solid fa-gauge"></i> Dashboard
+              </a>
+              <a href="#">
+                <i class="fa-solid fa-list"></i> My Listings
+              </a>
+              <a href="#">
+                <i class="fa-solid fa-user"></i> Profile
+              </a>
+              <a href="{% url 'logout' %}" class="danger">
+                <i class="fa-solid fa-right-from-bracket"></i> Log Out
+              </a>
+            </div>
           </div>
+
+          <a href="{% url 'property_create' %}" class="nav-cta text-sm font-semibold px-4 py-2 rounded-lg transition-all duration-200">
+            <i class="fa-solid fa-plus mr-1"></i> List Property
+          </a>
+
         {% else %}
-          <div class="flex items-center gap-4">
-            <a href="{% url 'login' %}" class="px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-              Login
-            </a>
-            <a href="{% url 'signup' %}" class="px-5 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
-              Sign Up
-            </a>
-          </div>
+
+          <a href="{% url 'login' %}" class="nav-login text-sm font-medium transition-colors duration-200">
+            Log In
+          </a>
+          <a href="{% url 'signup' %}" class="nav-cta text-sm font-semibold px-5 py-2 rounded-lg transition-all duration-200">
+            Get Started
+          </a>
+
         {% endif %}
       </div>
+
+      <!-- Mobile hamburger -->
+      <button id="hamburger-btn" class="md:hidden hamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+
     </div>
   </nav>
 
-  <!-- Main content -->
+  <!-- ════════════════════════════════════════
+       MOBILE MENU
+  ════════════════════════════════════════ -->
+  <div id="mobile-menu" role="dialog" aria-modal="true">
+    <a href="{% url 'home' %}">Home</a>
+    <a href="{% url 'property_list' %}">Properties</a>
+    <a href="#">Agents</a>
+    <a href="#">About</a>
+    <a href="#">Contact</a>
+
+    <div style="width:40px;height:1px;background:rgba(255,255,255,0.15);margin:0.5rem 0;"></div>
+
+    {% if user.is_authenticated %}
+      <a href="{% url 'dashboard' %}" style="font-size:1rem;color:#94a3b8;">
+        <i class="fa-solid fa-gauge mr-2"></i>Dashboard
+      </a>
+      <a href="{% url 'logout' %}" style="font-size:1rem;color:#f87171;">
+        <i class="fa-solid fa-right-from-bracket mr-2"></i>Log Out
+      </a>
+    {% else %}
+      <a href="{% url 'login' %}"  style="font-size:1rem;color:#94a3b8;">Log In</a>
+      <a href="{% url 'signup' %}" style="font-size:1rem;padding:10px 28px;background:#16a34a;border-radius:8px;color:#fff;">
+        Get Started
+      </a>
+    {% endif %}
+  </div>
+
+  <!-- ════════════════════════════════════════
+       FLASH MESSAGES
+  ════════════════════════════════════════ -->
+  {% if messages %}
+  <div class="flash-bar" id="flash-container">
+    {% for message in messages %}
+    <div class="flash-msg flash-{{ message.tags }}" onclick="this.remove()">
+      {% if message.tags == 'success' %}
+        <i class="fa-solid fa-circle-check"></i>
+      {% elif message.tags == 'error' %}
+        <i class="fa-solid fa-circle-xmark"></i>
+      {% elif message.tags == 'info' %}
+        <i class="fa-solid fa-circle-info"></i>
+      {% else %}
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      {% endif %}
+      <span>{{ message }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ════════════════════════════════════════
+       MAIN CONTENT
+  ════════════════════════════════════════ -->
   <main class="flex-grow">
     {% block content %}{% endblock %}
   </main>
 
-  <!-- Footer -->
-  <footer class="bg-gray-900 text-gray-300 py-12 mt-auto">
-    <div class="max-w-7xl mx-auto px-6 text-center">
-      <h3 class="text-xl font-bold text-white mb-4">NaijaNest</h3>
-      <p class="mb-6">Real listings • Verified agents • Honest details • No more wasted trips</p>
-      <p class="text-sm">© {% now "Y" %} NaijaNest. All rights reserved.</p>
+  <!-- ════════════════════════════════════════
+       FOOTER
+  ════════════════════════════════════════ -->
+  <footer class="py-16 mt-auto">
+    <div class="max-w-7xl mx-auto px-6">
+
+      <div class="flex flex-col md:flex-row justify-between gap-10 pb-12 border-b border-white/10">
+
+        <!-- Brand col -->
+        <div class="max-w-xs">
+          <h3 class="footer-brand text-white text-2xl font-bold mb-3">
+            NaijaNest<span style="color:var(--brand-gold);">.</span>
+          </h3>
+          <p class="text-sm leading-relaxed mb-5">
+            Find your home in Lagos without stress — real photos, verified listings, direct landlord contact.
+          </p>
+          <div class="flex gap-3">
+            <a href="#" class="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center hover:border-white/60 hover:text-white transition-colors" aria-label="Twitter/X">
+              <i class="fa-brands fa-x-twitter text-sm"></i>
+            </a>
+            <a href="#" class="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center hover:border-white/60 hover:text-white transition-colors" aria-label="Instagram">
+              <i class="fa-brands fa-instagram text-sm"></i>
+            </a>
+            <a href="#" class="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center hover:border-white/60 hover:text-white transition-colors" aria-label="WhatsApp">
+              <i class="fa-brands fa-whatsapp text-sm"></i>
+            </a>
+            <a href="#" class="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center hover:border-white/60 hover:text-white transition-colors" aria-label="Facebook">
+              <i class="fa-brands fa-facebook-f text-sm"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Link cols -->
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-8 text-sm">
+          <div>
+            <h4 class="text-white font-semibold mb-4 text-xs uppercase tracking-widest">Explore</h4>
+            <ul class="space-y-2.5">
+              <li><a href="{% url 'property_list' %}" class="footer-link">All Properties</a></li>
+              <li><a href="#" class="footer-link">Apartments</a></li>
+              <li><a href="#" class="footer-link">Houses</a></li>
+              <li><a href="#" class="footer-link">Short Lets</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-white font-semibold mb-4 text-xs uppercase tracking-widest">Company</h4>
+            <ul class="space-y-2.5">
+              <li><a href="#" class="footer-link">About Us</a></li>
+              <li><a href="#" class="footer-link">How it Works</a></li>
+              <li><a href="#" class="footer-link">Blog</a></li>
+              <li><a href="#" class="footer-link">Contact</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-white font-semibold mb-4 text-xs uppercase tracking-widest">Account</h4>
+            <ul class="space-y-2.5">
+              {% if user.is_authenticated %}
+                <li><a href="{% url 'dashboard' %}" class="footer-link">Dashboard</a></li>
+                <li><a href="#" class="footer-link">My Listings</a></li>
+                <li><a href="{% url 'logout' %}" class="footer-link">Log Out</a></li>
+              {% else %}
+                <li><a href="{% url 'login' %}"  class="footer-link">Log In</a></li>
+                <li><a href="{% url 'signup' %}" class="footer-link">Sign Up</a></li>
+                <li><a href="#" class="footer-link">List a Property</a></li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom row -->
+      <div class="pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
+        <p>© {% now "Y" %} NaijaNest. Made by Abiodun for Lagos.</p>
+        <div class="flex gap-5">
+          <a href="#" class="hover:text-gray-300 transition-colors">Privacy Policy</a>
+          <a href="#" class="hover:text-gray-300 transition-colors">Terms of Use</a>
+          <a href="#" class="hover:text-gray-300 transition-colors">Cookie Policy</a>
+        </div>
+      </div>
+
     </div>
   </footer>
 
+  <!-- ════════════════════════════════════════
+       SCRIPTS
+  ════════════════════════════════════════ -->
+  <script>
+    const navbar = document.getElementById('navbar');
+
+    function updateNav() {
+      if (window.scrollY > 20) {
+        navbar.classList.remove('transparent');
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+        navbar.classList.add('transparent');
+      }
+    }
+
+    updateNav();
+    window.addEventListener('scroll', updateNav, { passive: true });
+
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const mobileMenu   = document.getElementById('mobile-menu');
+
+    hamburgerBtn.addEventListener('click', () => {
+      const isOpen = mobileMenu.classList.toggle('open');
+      hamburgerBtn.classList.toggle('open', isOpen);
+      document.body.style.overflow = isOpen ? 'hidden' : '';
+    });
+
+    mobileMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.remove('open');
+        hamburgerBtn.classList.remove('open');
+        document.body.style.overflow = '';
+      });
+    });
+
+    setTimeout(() => {
+      document.querySelectorAll('.flash-msg').forEach(msg => {
+        msg.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+        msg.style.opacity = '0';
+        msg.style.transform = 'translateY(-8px)';
+        setTimeout(() => msg.remove(), 400);
+      });
+    }, 4500);
+
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('.nav-link').forEach(link => {
+      if (link.getAttribute('href') === currentPath) link.classList.add('active');
+    });
+  </script>
+
   {% block extra_js %}{% endblock %}
+
 </body>
 </html>
