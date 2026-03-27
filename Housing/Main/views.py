@@ -8,7 +8,6 @@ from .models import Property, SavedProperty
 
 
 def home(request):
-    # Show 3 featured active properties on homepage
     featured = Property.objects.filter(status='active').order_by('-created_at')[:3]
     return render(request, 'home.html', {'featured': featured})
 
@@ -66,18 +65,16 @@ def logout_view(request):
 def dashboard(request):
     role = request.user.profile.role
     if role == 'agent':
-        # Agent dashboard — their listings and enquiries
         my_listings = Property.objects.filter(owner=request.user).order_by('-created_at')
         total_views  = sum(p.views for p in my_listings)
         context = {
-            'my_listings':  my_listings,
-            'total_views':  total_views,
+            'my_listings':   my_listings,
+            'total_views':   total_views,
             'listing_count': my_listings.filter(status='active').count(),
         }
         return render(request, 'agent_dashboard.html', context)
 
-    # Tenant dashboard — saved properties
-    saved = SavedProperty.objects.filter(user=request.user).select_related('property')
+    saved       = SavedProperty.objects.filter(user=request.user).select_related('property')
     recommended = Property.objects.filter(status='active').order_by('-created_at')[:3]
     context = {
         'saved_properties': saved,
@@ -89,7 +86,6 @@ def dashboard(request):
 def property_list(request):
     properties = Property.objects.filter(status='active')
 
-    # ── Filters ──
     prop_type  = request.GET.get('type', '')
     location   = request.GET.get('location', '')
     bedrooms   = request.GET.get('bedrooms', '')
@@ -110,34 +106,29 @@ def property_list(request):
     properties = properties.order_by('-created_at')
 
     context = {
-        'properties':      properties,
-        'total':           properties.count(),
-        'selected_type':   prop_type,
-        'selected_loc':    location,
-        'selected_bed':    bedrooms,
-        'selected_price':  max_price,
+        'properties':     properties,
+        'total':          properties.count(),
+        'selected_type':  prop_type,
+        'selected_loc':   location,
+        'selected_bed':   bedrooms,
+        'selected_price': max_price,
     }
     return render(request, 'property_list.html', context)
 
 
 def property_detail(request, pk):
     property = get_object_or_404(Property, pk=pk)
-
-    # Increment view count
     property.views += 1
     property.save()
 
-    # Check if tenant has saved this property
     is_saved = False
     if request.user.is_authenticated:
         is_saved = SavedProperty.objects.filter(
             user=request.user, property=property
         ).exists()
 
-    # Similar properties — same location, exclude current
     similar = Property.objects.filter(
-        status='active',
-        location=property.location
+        status='active', location=property.location
     ).exclude(pk=pk)[:3]
 
     context = {
@@ -167,12 +158,10 @@ def property_create(request):
         availability  = request.POST.get('availability', '')
         amenities     = request.POST.getlist('amenities')
 
-        # Validate required fields
         if not all([title, description, property_type, listing_type, location, price, phone]):
             messages.error(request, 'Please fill in all required fields.')
             return render(request, 'property_create.html')
 
-        # Create and save property
         prop = Property.objects.create(
             owner         = request.user,
             title         = title,
@@ -202,7 +191,6 @@ def property_create(request):
             has_pool      = 'pool'     in amenities,
         )
 
-        # Handle image upload
         if 'images' in request.FILES:
             prop.image = request.FILES['images']
             prop.save()
@@ -221,7 +209,6 @@ def save_property(request, pk):
         property=property
     )
     if not created:
-        # Already saved — unsave it
         saved.delete()
         messages.info(request, 'Property removed from saved.')
     else:
@@ -229,11 +216,39 @@ def save_property(request, pk):
 
     return redirect('property_detail', pk=pk)
 
+
 def agents(request):
     return render(request, 'agents.html')
+
 
 def about(request):
     return render(request, 'about.html')
 
+
 def contact(request):
+    return render(request, 'contact.html')
+def contact(request):
+    if request.method == 'POST':
+        full_name = request.POST.get('full_name', '').strip()
+        email     = request.POST.get('email', '').strip()
+        phone     = request.POST.get('phone_num', '').strip()
+        subject   = request.POST.get('subject', '').strip()
+        message   = request.POST.get('message', '').strip()
+
+        if not all([full_name, email, subject, message]):
+            messages.error(request, 'Please fill in all required fields.')
+            return render(request, 'contact.html')
+
+        from .models import ContactMessage
+        ContactMessage.objects.create(
+            full_name = full_name,
+            email     = email,
+            phone     = phone,
+            subject   = subject,
+            message   = message,
+        )
+
+        messages.success(request, 'Your message has been sent! We will get back to you within 24 hours.')
+        return redirect('contact')
+
     return render(request, 'contact.html')

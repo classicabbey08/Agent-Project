@@ -198,8 +198,8 @@
       <span>Your message has been sent! We'll get back to you within 24 hours.</span>
     </div>
 
-    <form id="contactForm">
-      {% csrf_token %}
+   <form method="POST" action="{% url 'contact' %}">
+  {% csrf_token %}
 
       <div class="field-row">
         <div class="field-group">
