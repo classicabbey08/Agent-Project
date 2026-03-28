@@ -1,0 +1,1 @@
+web: gunicorn Housing.wsgi:application
